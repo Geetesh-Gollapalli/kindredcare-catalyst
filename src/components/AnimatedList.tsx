@@ -169,16 +169,16 @@ export default function AnimatedList<T = any>({
                   className={`rb-animated-list-card ${isSelected ? 'is-selected' : ''} ${itemClassName}`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#5227FF]/20 text-violet-300">
                       <HugeiconsIcon icon={SparklesIcon} size={16} strokeWidth={1.8} />
                     </span>
-                    <span className="text-sm font-semibold text-stone-800 truncate">
+                    <span className="text-sm font-semibold text-zinc-100 truncate">
                       {typeof item === 'string'
                         ? item
                         : (item as any)?.label || (item as any)?.title || JSON.stringify(item)}
                     </span>
                   </div>
-                  <span className="text-stone-400 shrink-0">
+                  <span className="text-zinc-500 shrink-0">
                     <HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={1.8} />
                   </span>
                 </div>

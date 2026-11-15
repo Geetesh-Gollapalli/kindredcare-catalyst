@@ -776,7 +776,7 @@ function frameAt(T: number, P: Settings, outro = 0) {
 /* ------------------------------------------------------------------ *
  * Component
  * ------------------------------------------------------------------ */
-interface GlassIconRevealProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
+export interface GlassIconRevealProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
   /** SVG markup (`<svg …>…</svg>`) or an image URL. Only the shape is used unless `originalColors` is on */
   logo: string
   /** Starting preset: light glass over a pale backdrop, or dark glass with an icon plate */
@@ -813,7 +813,7 @@ interface GlassIconRevealProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   label?: string
 }
 
-function GlassIconReveal({
+export function GlassIconReveal({
   logo,
   look = "light",
   background,
@@ -1105,6 +1105,31 @@ export function GlassReveal21st({ tuning, ...props }: GlassReveal21stProps) {
       logoColor="#0045ff"
       logoScale={0.6}
       finalScale={0.8}
+      {...props}
+      tuning={{
+        startZoom: 2.3,
+        ...tuning,
+      }}
+    />
+  )
+}
+
+const MARK_KINDRED_CARE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path fill-rule="evenodd" d="M60 104C58.2 104 56.5 103.3 55.2 102.1C33.4 82.8 14 66.2 14 44.5C14 27.6 27.2 15 43.2 15C50.9 15 56.8 18.4 60 22.8C63.2 18.4 69.1 15 76.8 15C92.8 15 106 27.6 106 44.5C106 66.2 86.6 82.8 64.8 102.1C63.5 103.3 61.8 104 60 104ZM54 36V48H42C39.8 48 38 49.8 38 52V60C38 62.2 39.8 64 42 64H54V76C54 78.2 55.8 80 58 80H62C64.2 80 66 78.2 66 76V64H78C80.2 64 82 62.2 82 60V52C82 49.8 80.2 48 78 48H66V36C66 33.8 64.2 32 62 32H58C55.8 32 54 33.8 54 36Z"/></svg>`
+
+export type KindredCareGlassLogoProps = Omit<GlassIconRevealProps, "logo">
+
+/** Dark-glass KindredCare emblem using the 21st.dev WebGL2 GlassIconReveal engine */
+export function KindredCareGlassLogo({ tuning, ...props }: KindredCareGlassLogoProps) {
+  return (
+    <GlassIconReveal
+      logo={MARK_KINDRED_CARE}
+      label="KindredCare AI"
+      look="dark"
+      background="#000000"
+      plateColor="#05070b"
+      logoColor="#ffffff"
+      logoScale={0.62}
+      finalScale={0.82}
       {...props}
       tuning={{
         startZoom: 2.3,

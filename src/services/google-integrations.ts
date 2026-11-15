@@ -55,7 +55,7 @@ export function buildGoogleCalendarMedicationUrl(
 
   const params = new URLSearchParams({
     action: 'TEMPLATE',
-    text: `💊 ${elderName}: ${med.name} (${med.dosage})`,
+    text: `${elderName}: ${med.name} (${med.dosage})`,
     dates: `${formatGCalDate(start)}/${formatGCalDate(end)}`,
     details: `Purpose: ${med.purpose}\nTiming: ${med.mealTiming.replace('_', ' ')}\nInstructions: ${med.instructions}\nPrescribed by: ${med.prescribedBy}`,
     recur: 'RRULE:FREQ=DAILY',

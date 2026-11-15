@@ -85,7 +85,7 @@ function buildAccessibleEmailHtml(params: {
       ? '#b91c1c'
       : params.category === 'low_refill'
         ? '#b45309'
-        : '#0f766e';
+        : '#5227FF';
 
   const actionButtonHtml =
     params.actionLabel && params.actionUrl
@@ -258,7 +258,7 @@ export async function triggerProactiveReminderWorkflow(params: {
       circle,
       category: 'elder_sos',
       idempotencyKey: `${circle.circleId}:elder_sos:${Date.now()}`,
-      subject: `🚨 PRIORITY CARE ALERT: ${circle.elderName} Requested Immediate Check-In`,
+      subject: `PRIORITY CARE ALERT: ${circle.elderName} Requested Immediate Check-In`,
       headline: `${circle.elderName} Pressed "I Need Help / Feeling Unwell"`,
       bodyText:
         customMessage ||
@@ -280,8 +280,8 @@ export async function triggerProactiveReminderWorkflow(params: {
       category,
       idempotencyKey: `${circle.circleId}:${category}:${med.id}:${todayKey}:${customRecipientEmail ? Date.now() : 'std'}`,
       subject: isMissed
-        ? `⚠️ Missed Dose Escalation: ${circle.elderName} — ${med.name} (${med.dosage})`
-        : `⏰ Upcoming Medication Reminder: ${med.name} at ${formatTime12h(med.scheduledTime)}`,
+        ? `Missed Dose Escalation: ${circle.elderName} — ${med.name} (${med.dosage})`
+        : `Upcoming Medication Reminder: ${med.name} at ${formatTime12h(med.scheduledTime)}`,
       headline: isMissed
         ? `Missed Medication Escalation (${circle.autonomySettings.escalationGraceMinutes}m Grace Elapsed)`
         : `Time Soon for ${med.name} (${med.dosage})`,
@@ -306,7 +306,7 @@ export async function triggerProactiveReminderWorkflow(params: {
       circle,
       category: 'appointment_reminder',
       idempotencyKey: `${circle.circleId}:appointment_reminder:${appt.id}:${todayKey}:${customRecipientEmail ? Date.now() : 'std'}`,
-      subject: `📅 Doctor Appointment Reminder: ${appt.doctorName} (${appt.specialty})`,
+      subject: `Doctor Appointment Reminder: ${appt.doctorName} (${appt.specialty})`,
       headline: `Upcoming Appointment with ${appt.doctorName}`,
       bodyText: `${circle.elderName} has an upcoming ${appt.specialty} appointment at ${appt.clinicName} (${appt.clinicAddress}) on ${new Date(appt.dateTime).toLocaleString()}. Preparation Checklist: ${checklistStr || 'Bring medication list'}.`,
       actionLabel: 'Open Clinic in Google Maps',
@@ -329,7 +329,7 @@ export async function triggerProactiveReminderWorkflow(params: {
       circle,
       category: 'low_refill',
       idempotencyKey: `${circle.circleId}:low_refill:${lowMed.id}:${todayKey}:${customRecipientEmail ? Date.now() : 'std'}`,
-      subject: `💊 Low Pill Inventory Alert: ${lowMed.name} (${lowMed.stockCount} doses remaining)`,
+      subject: `Low Pill Inventory Alert: ${lowMed.name} (${lowMed.stockCount} doses remaining)`,
       headline: `Refill Needed for ${lowMed.name}`,
       bodyText: `${circle.elderName}'s supply of ${lowMed.name} (${lowMed.dosage}) is down to ${lowMed.stockCount} tablets (threshold: ${lowMed.refillThreshold}). Prescribed by ${lowMed.prescribedBy}. Please arrange a pharmacy refill so no daily doses are missed.`,
       customRecipientEmail,

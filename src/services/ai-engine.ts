@@ -518,7 +518,7 @@ Return ONLY valid JSON matching:
 
   return {
     providerUsed,
-    elderName: 'Smt. Kamala Devi',
+    elderName: 'Primary Care Patient',
     elderAge: 74,
     bloodGroup: 'O+',
     allergies: ['Penicillin', 'Sulfa drugs'],

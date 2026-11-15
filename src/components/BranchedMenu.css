@@ -1,8 +1,8 @@
 .branched-menu {
   --bm-w: 240px;
-  --bm-ink: #14171a;
-  --bm-accent: #0f524b;
-  --bm-line: #d4cec3;
+  --bm-ink: #f5f5f5;
+  --bm-accent: #5227ff;
+  --bm-line: #3f3f46;
   --bm-font: 14px;
   --bm-row: 38px;
   --bm-indent: 40px;

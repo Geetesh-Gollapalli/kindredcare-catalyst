@@ -31,12 +31,14 @@ import { FamilyPeaceHubView } from '@/components/FamilyPeaceHubView';
 import BranchedMenu from '@/components/BranchedMenu';
 import CodeSlots from '@/components/CodeSlots';
 import TechText from '@/components/TechText';
-import GlassReveal21st from '@/components/GlassIconReveal';
+import { KindredCareGlassLogo } from '@/components/GlassIconReveal';
 import DoodleCrewFooter from '@/components/DoodleCrewFooter';
 import AnimatedList from '@/components/AnimatedList';
+import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Calendar03Icon,
   CheckListIcon,
+  FileUploadIcon,
   HeartCheckIcon,
   Logout01Icon,
   Mail01Icon,
@@ -227,7 +229,7 @@ export default function KindredCarePage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Care Circle Core State
-  const [elderName, setElderName] = useState('Smt. Kamala Devi');
+  const [elderName, setElderName] = useState('Primary Care Patient');
   const [elderAge, setElderAge] = useState(74);
   const [bloodGroup, setBloodGroup] = useState('O+');
   const [allergies, setAllergies] = useState<string[]>(['Penicillin', 'Sulfa drugs']);
@@ -251,17 +253,17 @@ export default function KindredCarePage() {
     bedTime: '21:45',
   });
   const [caretakerInfo, setCaretakerInfo] = useState({
-    name: 'Ananya Rao',
-    shift: 'Primary Caretaker & Nurse (8:00 AM – 8:00 PM)',
-    email: 'geeteshgollapalli@gmail.com',
+    name: 'Registered Caretaker',
+    shift: 'Primary Caretaker & Nurse (8:00 AM - 8:00 PM)',
+    email: 'careteam@kindredcare.ai',
   });
   const [familyInfo, setFamilyInfo] = useState({
-    name: 'Geetesh Gollapalli',
-    relation: 'Grandson & Family Coordinator',
-    email: 'geeteshgollapalli@gmail.com',
+    name: 'Family Coordinator',
+    relation: 'Primary Family Contact',
+    email: 'family@kindredcare.ai',
   });
   const [onDutyResponder, setOnDutyResponder] = useState(
-    'Ananya Rao (Primary Caretaker)'
+    'Registered Caretaker (On Duty)'
   );
   const [shiftHandoffNote, setShiftHandoffNote] = useState(
     'Morning meds confirmed, fasting sugar 112 mg/dL. Ensure full lunch before 1:30 PM Shelcal.'
@@ -342,7 +344,7 @@ export default function KindredCarePage() {
       status: 'normal',
       notes: 'Sitting calmly after morning walk',
       when: 'Today, 08:15 AM',
-      by: 'Kamala Ji',
+      by: 'Patient Self-Log',
     },
     {
       id: 'v2',
@@ -351,7 +353,7 @@ export default function KindredCarePage() {
       status: 'normal',
       notes: 'Fasting morning check',
       when: 'Today, 07:30 AM',
-      by: 'Ananya Rao',
+      by: 'Registered Caretaker',
     },
   ]);
 
@@ -359,8 +361,8 @@ export default function KindredCarePage() {
     {
       id: 'em-1',
       category: 'upcoming_dose',
-      subject: '⏰ Morning Medication Reminder: Thyronorm 50mcg (7:00 AM)',
-      recipients: 'Smt. Kamala Devi, Ananya Rao',
+      subject: 'Morning Medication Reminder: Thyronorm 50mcg (7:00 AM)',
+      recipients: 'Care Circle Members',
       preview:
         'Take 1 white round tablet on an empty stomach 45 mins before morning tea or breakfast.',
       sentAt: 'Today, 06:45 AM',
@@ -371,20 +373,20 @@ export default function KindredCarePage() {
   const [careNotes, setCareNotes] = useState([
     {
       id: 'n1',
-      author: 'Geetesh Gollapalli',
+      author: 'Family Coordinator',
       role: 'family',
       category: 'encouragement',
       message:
-        'Dadi, I ordered your Shelcal 500 refill from Apollo Pharmacy—arriving this evening! ❤️',
+        'Ordered the Shelcal 500 refill from the pharmacy — scheduled for delivery this evening.',
       when: '3 hours ago',
     },
     {
       id: 'n2',
-      author: 'Smt. Kamala Devi',
+      author: 'Primary Care Patient',
       role: 'elder',
       category: 'question_for_doctor',
       message:
-        'Ask Dr. Sharma tomorrow if I should skip evening Amlopres when afternoon BP is below 115/75.',
+        'Ask Dr. Sharma tomorrow if evening Amlopres should be adjusted when afternoon BP is below 115/75.',
       when: 'Yesterday',
     },
   ]);
@@ -393,21 +395,21 @@ export default function KindredCarePage() {
     {
       id: 'aud-1',
       when: 'Today, 08:35 AM',
-      actor: 'Smt. Kamala Devi (Elder)',
+      actor: 'Elder Companion',
       role: 'elder',
       note: 'Confirmed taking Glycomet SR 500 after breakfast.',
     },
     {
       id: 'aud-2',
       when: 'Today, 07:30 AM',
-      actor: 'Ananya Rao (Caretaker)',
+      actor: 'Registered Caretaker',
       role: 'caretaker',
       note: 'Logged fasting Blood Glucose: 112 mg/dL (Normal).',
     },
     {
       id: 'aud-3',
       when: '3 hours ago',
-      actor: 'Geetesh Gollapalli (Family)',
+      actor: 'Family Coordinator',
       role: 'family',
       note: 'Checked daily adherence & ordered Shelcal 500 pharmacy refill.',
     },
@@ -532,14 +534,14 @@ export default function KindredCarePage() {
         setWaitProgress(100);
         setTimeout(() => {
           if (!mounted) return;
-          // Automatic first-time detection: open Onboarding directly without asking!
+          // Automatic first-time detection: open Onboarding directly without asking
           if (!alreadyOnboarded) {
             setStage('onboarding');
           } else {
             setStage('portal');
           }
-        }, 180);
-      }, 220);
+        }, 550);
+      }, 1100);
     }
     bootWarmup();
     return () => {
@@ -679,7 +681,7 @@ export default function KindredCarePage() {
     setPasscodeInput('');
     setPinSlotStatus('idle');
     setStage('onboarding');
-    showToast('🗑️ Profile deleted & Care Circle reset. Starting fresh first-time onboarding.');
+    showToast('Profile deleted & Care Circle reset. Starting fresh first-time onboarding.');
   }
 
   // Medication Actions
@@ -735,7 +737,7 @@ export default function KindredCarePage() {
       body: JSON.stringify({ medicationId: medId, status: 'taken' }),
     }).catch(() => null);
 
-    showToast(`✓ Marked ${target.name} as Taken (${nowStr}).`);
+    showToast(`Marked ${target.name} as Taken (${nowStr}).`);
   }
 
   function handleUndoMed(medId: string) {
@@ -763,7 +765,7 @@ export default function KindredCarePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ medicationId: medId, status: 'pending' }),
     }).catch(() => null);
-    showToast(`↩ Undid ${target.name} log & restored 1 tablet.`);
+    showToast(`Undid ${target.name} log & restored 1 tablet.`);
   }
 
   function handleSnoozeMed(medId: string) {
@@ -772,7 +774,7 @@ export default function KindredCarePage() {
     setMedications((prev) =>
       prev.map((m) => (m.id === medId ? { ...m, status: 'snoozed' } : m))
     );
-    showToast(`⏰ Reminder snoozed for 15 minutes for ${target.name}.`);
+    showToast(`Reminder snoozed for 15 minutes for ${target.name}.`);
   }
 
   function handleSkipMed(medId: string, reason: string) {
@@ -802,7 +804,7 @@ export default function KindredCarePage() {
     if (isOut) {
       handleDispatchEmail({
         category: 'low_refill',
-        subject: `💊 Urgent Refill Needed: ${target.name} (Skipped due to 0 stock)`,
+        subject: `Urgent Refill Needed: ${target.name} (Skipped due to 0 stock)`,
         preview: `${elderName} skipped ${target.name} because the pillbox is out of tablets.`,
       });
     } else {
@@ -834,7 +836,7 @@ export default function KindredCarePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: medId, refillDelta: 30 }),
     }).catch(() => null);
-    showToast(`✓ Added +30 tablets to ${target.name}.`);
+    showToast(`Added +30 tablets to ${target.name}.`);
   }
 
   function handleAddOrEditMed(med: ProfileMedItem, isEdit: boolean) {
@@ -850,7 +852,7 @@ export default function KindredCarePage() {
         },
         ...prev,
       ]);
-      showToast(`✓ Updated ${med.name} schedule & purpose.`);
+      showToast(`Updated ${med.name} schedule & purpose.`);
     } else {
       setMedications((prev) => [...prev, med]);
       setAuditLog((prev) => [
@@ -863,7 +865,7 @@ export default function KindredCarePage() {
         },
         ...prev,
       ]);
-      showToast(`✓ Added ${med.name} to Care Circle schedule.`);
+      showToast(`Added ${med.name} to Care Circle schedule.`);
     }
   }
 
@@ -927,7 +929,7 @@ export default function KindredCarePage() {
       previewUrl,
     };
     setEmails((prev) => [newEm, ...prev]);
-    showToast(`✉️ Dispatched Email: ${subject}`);
+    showToast(`Dispatched Email: ${subject}`);
   }
 
   async function handleRunAutoScanEmails(customRecipient?: string) {
@@ -935,14 +937,14 @@ export default function KindredCarePage() {
     if (low.length > 0) {
       await handleDispatchEmail({
         category: 'low_refill',
-        subject: `💊 Low Pill Inventory Alert: ${low[0].name} (${low[0].stock} left)`,
+        subject: `Low Pill Inventory Alert: ${low[0].name} (${low[0].stock} left)`,
         preview: `${elderName}'s supply of ${low[0].name} is down to ${low[0].stock} tablets.`,
         customRecipient,
       });
     }
     await handleDispatchEmail({
       category: 'appointment_reminder',
-      subject: `📅 24h Appointment Reminder: ${appointments[0]?.doctorName} (${appointments[0]?.dateTimeLabel})`,
+      subject: `24h Appointment Reminder: ${appointments[0]?.doctorName} (${appointments[0]?.dateTimeLabel})`,
       preview: `Bring 14-day Blood Pressure & Adherence Brief to ${appointments[0]?.clinicName}.`,
       customRecipient,
     });
@@ -958,7 +960,7 @@ export default function KindredCarePage() {
       const data = await res.json();
       if (data?.report) {
         setDrugSafetyReport(data.report);
-        showToast(`🛡️ Refreshed via ${data.report.providerUsed}`);
+        showToast(`Refreshed via ${data.report.providerUsed}`);
       }
     } catch {
       showToast('Re-verified drug-interaction guard.');
@@ -975,7 +977,7 @@ export default function KindredCarePage() {
       const data = await res.json();
       if (data?.brief) {
         setAiDoctorBrief(data.brief);
-        showToast(`✨ Generated Clinical Brief via ${data.brief.providerUsed}`);
+        showToast(`Generated Clinical Brief via ${data.brief.providerUsed}`);
       }
     } catch {
       showToast('Updated Pre-Appointment Clinical Brief.');
@@ -1015,12 +1017,12 @@ export default function KindredCarePage() {
     setCaretakerInfo({
       name: cleanCaretakerName,
       shift: data.caretakerShift || 'Primary Care Shift',
-      email: data.caretakerEmail || 'geeteshgollapalli@gmail.com',
+      email: data.caretakerEmail || 'caretaker@kindredcare.health',
     });
     setFamilyInfo({
       name: cleanFamilyName,
       relation: data.familyRelation || 'Family Coordinator',
-      email: data.familyEmail || 'geeteshgollapalli@gmail.com',
+      email: data.familyEmail || 'family@kindredcare.health',
     });
     setOnDutyResponder(`${cleanCaretakerName} (Primary Caretaker)`);
     setAutonomy({
@@ -1107,17 +1109,24 @@ export default function KindredCarePage() {
     setMemberNameInput(cleanElderName);
     setPasscodeInput('');
     setStage('portal');
-    showToast('✓ Profile, Medications & Security PINs saved to Firebase & Cloud DB!');
+    showToast('Profile, Medications & Security PINs saved.');
   }
 
   /* =========================================================
      RENDER 1: CRASH-FREE BOOT & ROLE LOGIN WAIT SCREEN
      ========================================================= */
   if (stage === 'boot' || stage === 'role_wait') {
+    const resolvedName =
+      pendingRoleTarget === 'elder'
+        ? elderName
+        : pendingRoleTarget === 'caretaker'
+          ? caretakerInfo.name
+          : familyInfo.name;
     return (
       <BootAndLoginWaitScreen
         mode={stage === 'boot' ? 'boot' : 'role_login'}
         roleTarget={pendingRoleTarget}
+        profileName={isOnboarded ? resolvedName : undefined}
         steps={waitSteps}
         progressPercent={waitProgress}
       />
@@ -1131,7 +1140,7 @@ export default function KindredCarePage() {
     return (
       <>
         {toastMessage && (
-          <div className="fixed right-5 bottom-5 z-50 rounded-xl bg-[#14171A] px-4 py-3 text-xs font-bold text-white shadow-xl">
+          <div className="fixed right-5 bottom-5 z-50 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-xs font-bold text-[#f5f5f5] shadow-xl">
             {toastMessage}
           </div>
         )}
@@ -1219,54 +1228,64 @@ export default function KindredCarePage() {
     return (
       <main
         id="main-content"
-        className="flex min-h-screen flex-col justify-between bg-[#F6F5F1]"
+        className="flex min-h-screen flex-col justify-between bg-black text-[#f5f5f5]"
       >
         {toastMessage && (
-          <div className="fixed right-5 bottom-5 z-50 rounded-xl bg-[#14171A] px-4 py-3 text-xs font-bold text-white shadow-xl">
+          <div className="fixed right-5 bottom-5 z-50 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-xs font-bold text-[#f5f5f5] shadow-xl">
             {toastMessage}
           </div>
         )}
 
-        <div className="flex flex-1 items-center justify-center px-4 py-10">
-          <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-black/12 bg-white shadow-xl lg:grid-cols-12">
-            {/* Left Column: 21st.dev GlassReveal Logo + React Bits TechText Webname + AnimatedList */}
-            <div className="flex flex-col justify-between bg-[#FBFBF9] p-7 lg:col-span-6 lg:border-r lg:border-black/10 lg:p-10">
-              <div className="space-y-6">
-                {/* 21st.dev GlassIconReveal Logo + React Bits TechText Webname */}
-                <div className="flex items-center gap-4 rounded-2xl bg-[#0e0e10] p-4 shadow-lg">
-                  <div className="shrink-0">
-                    <GlassReveal21st className="h-14 w-14" look="dark" />
-                  </div>
-                  <div className="min-w-0 flex-1 overflow-hidden">
-                    <TechText
-                      text="KindredCare"
-                      fontSize={34}
-                      color="#ffffff"
-                      accentColor="#5227FF"
-                      duration={1.1}
-                      stagger={0.03}
-                      sliceCount={7}
-                      sliceTravel={0.35}
-                      scanDensity={3}
-                      glow={0.6}
-                      trigger="mount"
-                      replayOnHover
-                    />
-                    <p className="mt-1 text-[11px] font-medium tracking-wide text-zinc-400">
-                      Connected Elderly Care &amp; Medication Platform
-                    </p>
-                  </div>
-                </div>
+        <div className="flex flex-1 flex-col items-center justify-center px-4 py-10">
+          {/* Landing Hero Stage: Pure Black Backdrop + 21st.dev GlassIconReveal Logo + React Bits TechText Directly Underneath */}
+          <div className="mb-8 flex w-full max-w-3xl flex-col items-center text-center">
+            <div className="h-44 w-44 sm:h-52 sm:w-52">
+              <KindredCareGlassLogo
+                className="h-full w-full"
+                tileSize={210}
+                look="dark"
+                background="#000000"
+                logoColor="#ffffff"
+                hold={1.8}
+              />
+            </div>
+            <div className="mx-auto -mt-2 h-20 w-full max-w-md">
+              <TechText
+                text="KindredCare AI"
+                fontFamily="Inter, system-ui, sans-serif"
+                fontWeight={600}
+                fontSize={42}
+                color="#f5f5f5"
+                accentColor="#5227FF"
+                align="center"
+                reveal="letter"
+                dashLength={4}
+                dashGap={2}
+                specks={15}
+                intro="type"
+                introDuration={1.8}
+                clickKick
+                guides={false}
+              />
+            </div>
+            <p className="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-zinc-400">
+              Connected Elderly Care &amp; Medication Ecosystem
+            </p>
+          </div>
 
+          <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 shadow-2xl lg:grid-cols-12">
+            {/* Left Column: Architecture Highlights (AnimatedList) + Health Setup */}
+            <div className="flex flex-col justify-between border-b border-zinc-800 bg-zinc-950 p-7 lg:col-span-6 lg:border-b-0 lg:border-r lg:p-10">
+              <div className="space-y-6">
                 <div>
-                  <h1 className="text-3xl font-extrabold tracking-tight text-[#14171A]">
+                  <h1 className="text-3xl font-extrabold tracking-tight text-[#f5f5f5]">
                     Shared elderly care, built around dignity.
                   </h1>
-                  <p className="mt-2.5 text-sm leading-relaxed text-[#57606A]">
-                    Sign in with your <strong>Name</strong> and <strong>Security PIN</strong> to
-                    open your dedicated role workspace. Elders receive a calm, large-button
-                    companion while Caretakers and Family members access clinical and
-                    adherence tools.
+                  <p className="mt-2.5 text-sm leading-relaxed text-zinc-400">
+                    Sign in with your <strong className="text-zinc-200">Name</strong> and{' '}
+                    <strong className="text-zinc-200">Security PIN</strong> to open your
+                    dedicated role workspace. Elders receive a calm, large-button companion
+                    while Caretakers and Family members access clinical and adherence tools.
                   </p>
                 </div>
 
@@ -1281,49 +1300,51 @@ export default function KindredCarePage() {
                       <div
                         className={`rounded-2xl border p-4 transition-all ${
                           isSelected
-                            ? 'border-[#5227FF]/40 bg-[#5227FF]/5 shadow-xs'
-                            : 'border-black/10 bg-white'
+                            ? 'border-[#5227FF] bg-[#5227FF]/12 shadow-xs'
+                            : 'border-zinc-800 bg-zinc-900/70'
                         }`}
                       >
-                        <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                        <div className="text-xs font-bold uppercase tracking-wider text-violet-300">
                           {item.title}
                         </div>
-                        <p className="mt-1 text-xs text-[#57606A]">{item.desc}</p>
+                        <p className="mt-1 text-xs text-zinc-400">{item.desc}</p>
                       </div>
                     )}
                   />
                 </div>
               </div>
 
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-black/10 pt-5">
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800 pt-5">
                 <button
                   type="button"
                   onClick={() => setStage('onboarding')}
-                  className="rounded-xl border border-black/15 bg-white px-4 py-2.5 text-xs font-bold text-[#14171A] hover:bg-[#EFECE6]"
+                  className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-xs font-bold text-[#f5f5f5] hover:bg-zinc-800"
                 >
-                  📄 Update Health Profile / Upload Medical PDF
+                  <HugeiconsIcon icon={FileUploadIcon} size={15} strokeWidth={1.8} />
+                  Update Health Profile / Upload PDF
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowProfileModal(true)}
-                  className="rounded-xl border border-[#0F524B]/30 bg-[#0F524B]/5 px-4 py-2.5 text-xs font-bold text-[#0F524B]"
+                  className="inline-flex items-center gap-2 rounded-xl border border-[#5227FF]/40 bg-[#5227FF]/15 px-4 py-2.5 text-xs font-bold text-violet-200 hover:bg-[#5227FF]/25"
                 >
-                  👤 View Care Circle Profile
+                  <HugeiconsIcon icon={UserCircleIcon} size={15} strokeWidth={1.8} />
+                  View Care Circle Profile
                 </button>
               </div>
             </div>
 
             {/* Right Column: Clean Name + React Bits CodeSlots PIN Entry */}
-            <div className="flex flex-col justify-center p-7 lg:col-span-6 lg:p-10">
-              <h2 className="text-2xl font-extrabold text-[#14171A]">
+            <div className="flex flex-col justify-center bg-zinc-950 p-7 lg:col-span-6 lg:p-10">
+              <h2 className="text-2xl font-extrabold text-[#f5f5f5]">
                 Sign In to Your Workspace
               </h2>
-              <p className="mt-1 text-xs text-[#57606A]">
+              <p className="mt-1 text-xs text-zinc-400">
                 Select your role, enter your full name, and enter your personal security PIN.
               </p>
 
               {/* Clean Role Selector Tabs (Zero Exposed PINs) */}
-              <div className="mt-5 grid grid-cols-3 gap-1.5 rounded-xl bg-[#EFECE6] p-1">
+              <div className="mt-5 grid grid-cols-3 gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900 p-1">
                 {(
                   [
                     { r: 'elder', label: 'Elderly Member' },
@@ -1342,8 +1363,8 @@ export default function KindredCarePage() {
                     }}
                     className={`rounded-lg py-2.5 text-xs font-bold transition ${
                       portalRoleTab === tab.r
-                        ? 'bg-white text-[#14171A] shadow-2xs'
-                        : 'text-[#57606A]'
+                        ? 'bg-[#5227FF] text-white shadow-sm'
+                        : 'text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
                     {tab.label}
@@ -1355,7 +1376,7 @@ export default function KindredCarePage() {
                 <div>
                   <label
                     htmlFor="member-name-field"
-                    className="block text-xs font-bold text-[#14171A]"
+                    className="block text-xs font-bold text-zinc-200"
                   >
                     Your Full Name
                   </label>
@@ -1374,7 +1395,7 @@ export default function KindredCarePage() {
                       setMemberNameInput(e.target.value);
                       setPortalError(null);
                     }}
-                    className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm font-semibold"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm font-semibold text-[#f5f5f5] placeholder:text-zinc-500"
                   />
                 </div>
 
@@ -1382,21 +1403,21 @@ export default function KindredCarePage() {
                   <div className="flex items-center justify-between">
                     <label
                       htmlFor="passcode-field"
-                      className="block text-xs font-bold text-[#14171A]"
+                      className="block text-xs font-bold text-zinc-200"
                     >
                       Your Security PIN
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowPasscodeText(!showPasscodeText)}
-                      className="text-[11px] font-bold text-[#0F524B] hover:underline"
+                      className="text-[11px] font-bold text-violet-300 hover:underline"
                     >
                       {showPasscodeText ? 'Mask PIN Digits' : 'Show PIN Digits'}
                     </button>
                   </div>
 
                   {/* React Bits CodeSlots Component for PIN Entry */}
-                  <div className="mt-1.5 flex flex-col items-center justify-center rounded-2xl bg-[#18181b] px-4 py-4 shadow-inner">
+                  <div className="mt-1.5 flex flex-col items-center justify-center rounded-2xl border border-zinc-800 bg-black px-4 py-4 shadow-inner">
                     <CodeSlots
                       length={4}
                       value={passcodeInput.replace(/\D/g, '').slice(0, 4)}
@@ -1410,7 +1431,7 @@ export default function KindredCarePage() {
                       onComplete={(code: string) => {
                         setPasscodeInput(code);
                       }}
-                      accentColor="#f5f5f5"
+                      accentColor="#5227FF"
                       inkColor="#f5f5f5"
                       slotColor="#27272a"
                       digitColor="#18181b"
@@ -1462,7 +1483,7 @@ export default function KindredCarePage() {
                             prev.length < 4 ? prev + key : prev
                           );
                       }}
-                      className="rounded-xl border border-black/12 bg-[#F6F5F1] py-2.5 text-sm font-bold text-[#14171A] hover:bg-[#EFECE6]"
+                      className="rounded-xl border border-zinc-800 bg-zinc-900 py-2.5 text-sm font-bold text-[#f5f5f5] hover:bg-zinc-800"
                     >
                       {key}
                     </button>
@@ -1473,7 +1494,7 @@ export default function KindredCarePage() {
               {portalError && (
                 <div
                   role="alert"
-                  className="mt-3 rounded-xl border border-red-300 bg-red-50 px-3.5 py-2.5 text-xs font-bold text-red-800"
+                  className="mt-3 rounded-xl border border-red-500/40 bg-red-950/50 px-3.5 py-2.5 text-xs font-bold text-red-200"
                 >
                   {portalError}
                 </div>
@@ -1482,9 +1503,9 @@ export default function KindredCarePage() {
               <button
                 type="button"
                 onClick={handlePortalUnlock}
-                className="mt-4 w-full rounded-xl bg-[#0F524B] py-3.5 text-sm font-extrabold text-white shadow-md hover:bg-[#0A3C36]"
+                className="mt-4 w-full rounded-xl bg-[#5227FF] py-3.5 text-sm font-extrabold text-white shadow-lg transition hover:bg-[#6d4aff]"
               >
-                Sign In to Workspace →
+                Sign In to Workspace
               </button>
             </div>
           </div>
@@ -1525,13 +1546,52 @@ export default function KindredCarePage() {
         />
 
         {/* 21st.dev DoodleCrewFooter on Landing Page */}
-        <div className="w-full no-print mt-8">
+        <div className="w-full no-print mt-8 border-t border-zinc-900">
           <DoodleCrewFooter
             wordmark="KINDREDCARE"
             brand="KindredCare AI"
-            blurb="Role-isolated elderly care & medication safety platform powered by Adaption Labs Gemma 4, Gemini 2.5 Flash & Firebase."
+            blurb="Role-isolated elderly care and medication safety platform powered by Adaption Labs Gemma 4, Gemini 2.5 Flash & Firebase."
             tagline="Shared elderly care, built around dignity."
-            copyright="© 2026 KindredCare AI • PromptWars × Catalyst Hackathon"
+            copyright="© 2026 KindredCare AI • PromptWars x Catalyst Hackathon"
+            preset="night"
+            palette={{ background: '#000000', ink: '#f5f5f5', accent: '#5227FF' }}
+            doodles={['sparkle', 'star', 'heart', 'bolt']}
+            columns={[
+              {
+                title: 'Workspaces',
+                links: [
+                  { label: 'Elder Companion', href: '#main-content' },
+                  { label: 'Clinical Station', href: '#main-content' },
+                  { label: 'Family Hub', href: '#main-content' },
+                ],
+              },
+              {
+                title: 'AI Safety',
+                links: [
+                  { label: 'PDF Medical Scanner', href: '#main-content' },
+                  { label: 'Drug Interaction Guard', href: '#main-content' },
+                  { label: 'Clinical Briefs', href: '#main-content' },
+                ],
+              },
+              {
+                title: 'Security',
+                links: [
+                  { label: 'Scrypt PIN Vault', href: '#main-content' },
+                  { label: 'Elder Autonomy Locks', href: '#main-content' },
+                  { label: 'Firebase Sync', href: '#main-content' },
+                ],
+              },
+            ]}
+            actions={[{ label: 'Back to Sign In', href: '#main-content', icon: 'sparkle', variant: 'solid' }]}
+            socials={[
+              { label: 'Firebase', href: '#main-content' },
+              { label: 'Gemini AI', href: '#main-content' },
+              { label: 'Gemma 4', href: '#main-content' },
+            ]}
+            legal={[
+              { label: 'Privacy', href: '#main-content' },
+              { label: 'Clinical Disclaimer', href: '#main-content' },
+            ]}
           />
         </div>
       </main>
@@ -1613,19 +1673,19 @@ export default function KindredCarePage() {
         : familyActiveTab;
 
   return (
-    <div className="app-workspace-shell min-h-screen bg-[#F6F5F1] text-[#14171A]">
+    <div className="app-workspace-shell min-h-screen bg-black text-[#f5f5f5]">
       {toastMessage && (
         <div
           role="status"
           aria-live="polite"
-          className="fixed right-5 bottom-5 z-50 rounded-xl bg-[#14171A] px-4 py-3 text-xs font-bold text-white shadow-xl"
+          className="fixed right-5 bottom-5 z-50 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-xs font-bold text-[#f5f5f5] shadow-xl"
         >
           {toastMessage}
         </div>
       )}
 
       {/* Role-Specific Header */}
-      <header className="no-print sticky top-0 z-30 border-b border-black/10 bg-white/95 backdrop-blur-xs">
+      <header className="no-print sticky top-0 z-30 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3.5">
           <div className="flex items-center gap-3">
             <KindredCareLogo
@@ -1635,7 +1695,7 @@ export default function KindredCarePage() {
                   ? `Elder Companion • ${elderName}`
                   : role === 'caretaker'
                     ? `Clinical Caretaker Station • ${caretakerInfo.name}`
-                    : `Family Peace-of-Mind Hub • ${familyInfo.name}`
+                    : `Family Overview • ${familyInfo.name}`
               }
             />
           </div>
@@ -1645,17 +1705,19 @@ export default function KindredCarePage() {
             <button
               type="button"
               onClick={() => setShowProfileModal(true)}
-              className="rounded-xl border border-[#0F524B]/30 bg-[#0F524B]/5 px-3.5 py-2 text-xs font-bold text-[#0F524B] hover:bg-[#0F524B]/10"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#5227FF]/40 bg-[#5227FF]/15 px-3.5 py-2 text-xs font-bold text-violet-200 hover:bg-[#5227FF]/25"
             >
-              👤 {elderName}’s Profile &amp; Care Team
+              <HugeiconsIcon icon={UserCircleIcon} size={15} strokeWidth={1.8} />
+              {elderName}’s Profile &amp; Care Team
             </button>
 
             <button
               type="button"
               onClick={() => setShowMedicalIdModal(true)}
-              className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-xs font-bold text-red-800"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/40 bg-red-950/60 px-3 py-2 text-xs font-bold text-red-200 hover:bg-red-900/60"
             >
-              🪪 Medical ID
+              <HugeiconsIcon icon={MedicalFileIcon} size={15} strokeWidth={1.8} />
+              Medical ID
             </button>
 
             <button
@@ -1664,8 +1726,8 @@ export default function KindredCarePage() {
               aria-pressed={comfortMode}
               className={`rounded-xl border px-3 py-2 text-xs font-bold ${
                 comfortMode
-                  ? 'border-[#0F524B] bg-[#0F524B] text-white'
-                  : 'border-black/15 bg-white text-[#14171A]'
+                  ? 'border-[#5227FF] bg-[#5227FF] text-white'
+                  : 'border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'
               }`}
             >
               Aa Large Text
@@ -1677,11 +1739,11 @@ export default function KindredCarePage() {
               aria-pressed={highContrast}
               className={`rounded-xl border px-3 py-2 text-xs font-bold ${
                 highContrast
-                  ? 'border-black bg-black text-white'
-                  : 'border-black/15 bg-white text-[#14171A]'
+                  ? 'border-white bg-white text-black'
+                  : 'border-zinc-700 bg-zinc-900 text-zinc-200 hover:bg-zinc-800'
               }`}
             >
-              ◐ Contrast
+              High Contrast
             </button>
 
             <button
@@ -1690,9 +1752,10 @@ export default function KindredCarePage() {
                 setPasscodeInput('');
                 setStage('portal');
               }}
-              className="rounded-xl bg-[#14171A] px-3.5 py-2 text-xs font-bold text-white"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs font-bold text-[#f5f5f5] hover:bg-zinc-800"
             >
-              🔒 Sign Out / Switch Role
+              <HugeiconsIcon icon={Logout01Icon} size={14} strokeWidth={1.8} />
+              Sign Out / Switch Role
             </button>
           </div>
         </div>
@@ -1701,8 +1764,8 @@ export default function KindredCarePage() {
       {/* Main Role-Isolated Stage with React Bits BranchedMenu Navigation */}
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pt-6 lg:flex-row">
         <aside className="no-print shrink-0 lg:w-64">
-          <div className="sticky top-20 rounded-2xl border border-black/10 bg-white p-5 shadow-xs">
-            <div className="mb-3 text-[11px] font-extrabold uppercase tracking-wider text-[#0F524B]">
+          <div className="sticky top-20 rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-xl">
+            <div className="mb-3 text-[11px] font-extrabold uppercase tracking-wider text-zinc-400">
               {role === 'elder'
                 ? 'Elder Navigation'
                 : role === 'caretaker'
@@ -1745,9 +1808,9 @@ export default function KindredCarePage() {
                   setFamilyActiveTab(val);
                 }
               }}
-              color="#14171A"
-              accentColor="#0F524B"
-              lineColor="#D4CEC3"
+              color="#f5f5f5"
+              accentColor="#5227FF"
+              lineColor="#3f3f46"
               width={230}
               rowHeight={38}
               indent={38}
@@ -1789,8 +1852,8 @@ export default function KindredCarePage() {
                 if (m) {
                   handleDispatchEmail({
                     category: 'low_refill',
-                    subject: `💊 Elder Refill Request: ${m.name} (${m.stock} left)`,
-                    preview: `${elderName} tapped "Ask Family to Order More" for ${m.name}.`,
+                    subject: `Elder Refill Request: ${m.name} (${m.stock} left)`,
+                    preview: `${elderName} requested a refill for ${m.name}.`,
                   });
                 }
               }}
@@ -1799,7 +1862,7 @@ export default function KindredCarePage() {
                   const next = { ...prev, [mealKey]: !prev[mealKey] };
                   showToast(
                     `${mealKey.charAt(0).toUpperCase() + mealKey.slice(1)} marked ${
-                      next[mealKey] ? 'eaten ✓' : 'not eaten yet'
+                      next[mealKey] ? 'eaten' : 'not eaten yet'
                     }`
                   );
                   return next;
@@ -1824,7 +1887,7 @@ export default function KindredCarePage() {
                 showToast(
                   feeling === 'Feeling Good'
                     ? 'Glad you are feeling good today!'
-                    : `Noted "${feeling}" — Nurse ${caretakerInfo.name.split(' ')[0]} has been notified.`
+                    : `Noted "${feeling}" — ${caretakerInfo.name.split(' ')[0]} has been notified.`
                 );
               }}
               onToggleChecklist={(apptId, checkId) => {
@@ -1853,12 +1916,12 @@ export default function KindredCarePage() {
                   },
                   ...prev,
                 ]);
-                showToast('✓ Saved your question for the doctor!');
+                showToast('Saved your question for the doctor.');
               }}
               onTriggerSos={() => {
                 handleDispatchEmail({
                   category: 'elder_sos',
-                  subject: `🚨 PRIORITY SOS: ${elderName} Requested Immediate Help`,
+                  subject: `PRIORITY SOS: ${elderName} Requested Immediate Help`,
                   preview: `${elderName} pressed the Emergency SOS button. Please call ${emergencyPhone} immediately.`,
                 });
               }}
@@ -1875,7 +1938,7 @@ export default function KindredCarePage() {
                     preferredLanguage: patch.language,
                   }),
                 }).catch(() => null);
-                showToast('✓ Updated your personal privacy & comfort settings.');
+                showToast('Updated your personal privacy & comfort settings.');
               }}
               onToggleComfort={() => setComfortMode(!comfortMode)}
               onToggleContrast={() => setHighContrast(!highContrast)}
@@ -1923,7 +1986,7 @@ export default function KindredCarePage() {
                   },
                   ...prev,
                 ]);
-                showToast('✓ Saved timestamped shift handoff.');
+                showToast('Saved timestamped shift handoff.');
               }}
               onAddVital={(type, value, notes) => {
                 const num = parseInt(value, 10);
@@ -1955,14 +2018,14 @@ export default function KindredCarePage() {
                   },
                   ...prev,
                 ]);
-                showToast(`✓ Logged ${type}: ${value}`);
+                showToast(`Logged ${type}: ${value}`);
               }}
               onAddAppointment={(appt) => {
                 setAppointments((prev) => [
                   ...prev,
                   { ...appt, id: `appt-${Date.now()}` },
                 ]);
-                showToast('📅 Scheduled appointment with Google Calendar & Maps links.');
+                showToast('Scheduled appointment with Google Calendar & Maps links.');
               }}
               onToggleChecklist={(apptId, checkId) => {
                 setAppointments((prev) =>
@@ -1994,7 +2057,7 @@ export default function KindredCarePage() {
                   },
                   ...prev,
                 ]);
-                showToast('✓ Saved Post-Visit Outcome to card & audit log.');
+                showToast('Saved Post-Visit Outcome to card & audit log.');
               }}
               onRefreshAiDoctorBrief={handleRefreshAiDoctorBrief}
               onDispatchEmail={handleDispatchEmail}
@@ -2043,7 +2106,7 @@ export default function KindredCarePage() {
                   },
                   ...prev,
                 ]);
-                showToast('💌 Posted note to Care Circle!');
+                showToast('Posted note to Care Circle.');
               }}
               onDispatchEmail={handleDispatchEmail}
             />
@@ -2092,38 +2155,41 @@ export default function KindredCarePage() {
           ========================================================= */}
       {showMedicalIdModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="modal-print-container w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="modal-print-container w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-[#f5f5f5] shadow-2xl">
             <div className="rounded-xl bg-red-700 p-4 text-white">
               <div className="text-xs font-bold uppercase tracking-wider">
-                Emergency Medical ID Card • Care Circle KC-2026
+                Emergency Medical ID Card • KindredCare
               </div>
               <h3 className="mt-1 text-xl font-extrabold">
                 {elderName} ({elderAge} yrs • Blood Group {bloodGroup})
               </h3>
             </div>
-            <div className="mt-4 space-y-3 text-xs">
-              <div className="rounded-xl border border-red-200 bg-red-50 p-3 font-bold text-red-900">
-                CRITICAL ALLERGIES: {allergies.join(', ')}
+            <div className="mt-4 space-y-3 text-xs text-zinc-300">
+              <div className="rounded-xl border border-red-500/40 bg-red-950/60 p-3 font-bold text-red-200">
+                CRITICAL ALLERGIES: {allergies.join(', ') || 'None recorded'}
               </div>
               <div>
-                <strong>Conditions:</strong> {conditions.join(' • ')}
+                <strong className="text-zinc-100">Conditions:</strong>{' '}
+                {conditions.join(' • ') || 'None recorded'}
               </div>
               <div>
-                <strong>Primary Physician:</strong> {primaryDoctor}
+                <strong className="text-zinc-100">Primary Physician:</strong> {primaryDoctor}
               </div>
               <div>
-                <strong>Emergency Contact:</strong> {emergencyPhone} ({familyInfo.name})
+                <strong className="text-zinc-100">Emergency Contact:</strong> {emergencyPhone} (
+                {familyInfo.name})
               </div>
               <div>
-                <strong>Active Medications &amp; Purpose:</strong>
-                <ul className="mt-1 list-disc pl-5 space-y-1">
+                <strong className="text-zinc-100">Active Medications &amp; Purpose:</strong>
+                <ul className="mt-1 list-disc space-y-1 pl-5">
                   {medications.map((m) => (
                     <li key={m.id}>
-                      <strong>{m.name}</strong> ({m.dosage} at {m.time}) — {m.purpose}
+                      <strong className="text-white">{m.name}</strong> ({m.dosage} at {m.time}) —{' '}
+                      {m.purpose}
                     </li>
                   ))}
                 </ul>
@@ -2133,14 +2199,15 @@ export default function KindredCarePage() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="rounded-xl bg-[#0F524B] px-4 py-2 text-xs font-bold text-white"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#5227FF] px-4 py-2 text-xs font-bold text-white hover:bg-[#6d4aff]"
               >
-                🖨️ Print Emergency Card
+                <HugeiconsIcon icon={PrinterIcon} size={14} strokeWidth={1.8} />
+                Print Emergency Card
               </button>
               <button
                 type="button"
                 onClick={() => setShowMedicalIdModal(false)}
-                className="rounded-xl border border-black/15 px-4 py-2 text-xs font-bold"
+                className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-200 hover:bg-zinc-800"
               >
                 Close
               </button>
@@ -2154,41 +2221,41 @@ export default function KindredCarePage() {
           ========================================================= */}
       {showFridgeSheetModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="modal-print-container w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-[#14171A]">
+          <div className="modal-print-container w-full max-w-3xl rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-[#f5f5f5] shadow-2xl">
+            <h3 className="text-xl font-bold text-[#f5f5f5]">
               Printable Fridge Pillbox Schedule — {elderName}
             </h3>
-            <p className="text-xs text-[#57606A]">
+            <p className="text-xs text-zinc-400">
               High-contrast weekly check-off sheet for taping beside physical pillboxes.
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full border-collapse text-left text-xs">
                 <thead>
-                  <tr className="bg-[#F6F5F1]">
-                    <th className="border border-black/20 p-2">Time</th>
-                    <th className="border border-black/20 p-2">Medicine &amp; Purpose</th>
-                    <th className="border border-black/20 p-2">Pill Look</th>
-                    <th className="border border-black/20 p-2">Meal Rule</th>
-                    <th className="border border-black/20 p-2">Weekly Check</th>
+                  <tr className="bg-zinc-900 text-zinc-200">
+                    <th className="border border-zinc-800 p-2">Time</th>
+                    <th className="border border-zinc-800 p-2">Medicine &amp; Purpose</th>
+                    <th className="border border-zinc-800 p-2">Pill Look</th>
+                    <th className="border border-zinc-800 p-2">Meal Rule</th>
+                    <th className="border border-zinc-800 p-2">Weekly Check</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-zinc-300">
                   {medications.map((m) => (
                     <tr key={m.id}>
-                      <td className="border border-black/20 p-2 font-bold">{m.time}</td>
-                      <td className="border border-black/20 p-2">
-                        <strong>{m.name}</strong> ({m.dosage})
-                        <div className="text-[11px] text-[#57606A]">{m.purpose}</div>
+                      <td className="border border-zinc-800 p-2 font-bold text-white">{m.time}</td>
+                      <td className="border border-zinc-800 p-2">
+                        <strong className="text-white">{m.name}</strong> ({m.dosage})
+                        <div className="text-[11px] text-zinc-400">{m.purpose}</div>
                       </td>
-                      <td className="border border-black/20 p-2">
+                      <td className="border border-zinc-800 p-2">
                         {m.colorName} {m.shape} ({m.imprint})
                       </td>
-                      <td className="border border-black/20 p-2">{m.mealTiming}</td>
-                      <td className="border border-black/20 p-2 font-mono">
+                      <td className="border border-zinc-800 p-2">{m.mealTiming}</td>
+                      <td className="border border-zinc-800 p-2 font-mono">
                         [ ]M [ ]T [ ]W [ ]T [ ]F [ ]S [ ]S
                       </td>
                     </tr>
@@ -2200,14 +2267,15 @@ export default function KindredCarePage() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="rounded-xl bg-[#0F524B] px-4 py-2 text-xs font-bold text-white"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#5227FF] px-4 py-2 text-xs font-bold text-white hover:bg-[#6d4aff]"
               >
-                🖨️ Print Fridge Sheet
+                <HugeiconsIcon icon={PrinterIcon} size={14} strokeWidth={1.8} />
+                Print Fridge Sheet
               </button>
               <button
                 type="button"
                 onClick={() => setShowFridgeSheetModal(false)}
-                className="rounded-xl border border-black/15 px-4 py-2 text-xs font-bold"
+                className="rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-200 hover:bg-zinc-800"
               >
                 Close
               </button>
@@ -2217,13 +2285,52 @@ export default function KindredCarePage() {
       )}
 
       {/* 21st.dev DoodleCrewFooter in Workspace */}
-      <div className="w-full no-print mt-12">
+      <div className="w-full no-print mt-12 border-t border-zinc-900">
         <DoodleCrewFooter
           wordmark="KINDREDCARE"
           brand="KindredCare AI"
-          blurb="Role-isolated elderly care & medication safety platform powered by Adaption Labs Gemma 4, Gemini 2.5 Flash & Firebase."
+          blurb="Role-isolated elderly care and medication safety platform powered by Adaption Labs Gemma 4, Gemini 2.5 Flash & Firebase."
           tagline="Shared elderly care, built around dignity."
-          copyright="© 2026 KindredCare AI • PromptWars × Catalyst Hackathon"
+          copyright="© 2026 KindredCare AI • PromptWars x Catalyst Hackathon"
+          preset="night"
+          palette={{ background: '#000000', ink: '#f5f5f5', accent: '#5227FF' }}
+          doodles={['sparkle', 'star', 'heart', 'bolt']}
+          columns={[
+            {
+              title: 'Workspaces',
+              links: [
+                { label: 'Elder Companion', href: '#main-content' },
+                { label: 'Clinical Station', href: '#main-content' },
+                { label: 'Family Hub', href: '#main-content' },
+              ],
+            },
+            {
+              title: 'AI Safety',
+              links: [
+                { label: 'PDF Medical Scanner', href: '#main-content' },
+                { label: 'Drug Interaction Guard', href: '#main-content' },
+                { label: 'Clinical Briefs', href: '#main-content' },
+              ],
+            },
+            {
+              title: 'Security',
+              links: [
+                { label: 'Scrypt PIN Vault', href: '#main-content' },
+                { label: 'Elder Autonomy Locks', href: '#main-content' },
+                { label: 'Firebase Sync', href: '#main-content' },
+              ],
+            },
+          ]}
+          actions={[{ label: 'Top of Workspace', href: '#main-content', icon: 'sparkle', variant: 'solid' }]}
+          socials={[
+            { label: 'Firebase', href: '#main-content' },
+            { label: 'Gemini AI', href: '#main-content' },
+            { label: 'Gemma 4', href: '#main-content' },
+          ]}
+          legal={[
+            { label: 'Privacy', href: '#main-content' },
+            { label: 'Clinical Disclaimer', href: '#main-content' },
+          ]}
         />
       </div>
     </div>

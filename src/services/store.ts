@@ -35,31 +35,31 @@ export const DEFAULT_PASSCODE_RECORDS: RolePasscodeRecord[] = [
     role: 'elder',
     salt: elderHash.salt,
     hash: elderHash.hash,
-    label: 'Smt. Kamala Devi (Elder Owner)',
+    label: 'Primary Care Patient (Elder Owner)',
   },
   {
     role: 'caretaker',
     salt: caretakerHash.salt,
     hash: caretakerHash.hash,
-    label: 'Ananya Rao (Primary Caretaker)',
+    label: 'Primary Caretaker (Clinical Staff)',
   },
   {
     role: 'caretaker',
     salt: caretakerPinHash.salt,
     hash: caretakerPinHash.hash,
-    label: 'Ananya Rao (Primary Caretaker)',
+    label: 'Primary Caretaker (Clinical Staff)',
   },
   {
     role: 'family',
     salt: familyHash.salt,
     hash: familyHash.hash,
-    label: 'Geetesh Gollapalli (Family Circle)',
+    label: 'Family Coordinator (Care Circle)',
   },
   {
     role: 'family',
     salt: familyPinHash.salt,
     hash: familyPinHash.hash,
-    label: 'Geetesh Gollapalli (Family Circle)',
+    label: 'Family Coordinator (Care Circle)',
   },
 ];
 
@@ -82,7 +82,7 @@ function createSeedCareCircle(): CareCircleState {
   return {
     circleId: DEFAULT_CIRCLE_ID,
     circleCode: DEFAULT_CIRCLE_CODE,
-    elderName: 'Smt. Kamala Devi',
+    elderName: 'Primary Care Patient',
     elderAge: 74,
     bloodGroup: 'O+',
     allergies: ['Penicillin', 'Sulfa drugs'],
@@ -100,10 +100,10 @@ function createSeedCareCircle(): CareCircleState {
     members: [
       {
         id: 'mem-elder-1',
-        name: 'Smt. Kamala Devi',
+        name: 'Primary Care Patient',
         relation: 'Self (Center of Care)',
         role: 'elder',
-        email: 'geeteshgollapalli@gmail.com',
+        email: 'elder@kindredcare.health',
         phone: '+91 98400 11220',
         receiveMissedAlerts: true,
         receiveAppointmentReminders: true,
@@ -111,10 +111,10 @@ function createSeedCareCircle(): CareCircleState {
       },
       {
         id: 'mem-caretaker-1',
-        name: 'Ananya Rao',
+        name: 'Primary Caretaker',
         relation: 'Primary Caretaker & Nurse',
         role: 'caretaker',
-        email: 'geeteshgollapalli@gmail.com',
+        email: 'caretaker@kindredcare.health',
         phone: '+91 98400 11221',
         receiveMissedAlerts: true,
         receiveAppointmentReminders: true,
@@ -122,10 +122,10 @@ function createSeedCareCircle(): CareCircleState {
       },
       {
         id: 'mem-family-1',
-        name: 'Geetesh Gollapalli',
-        relation: 'Grandson & Family Coordinator',
+        name: 'Family Coordinator',
+        relation: 'Family Care Coordinator',
         role: 'family',
-        email: 'geeteshgollapalli@gmail.com',
+        email: 'family@kindredcare.health',
         phone: '+91 98400 11223',
         receiveMissedAlerts: true,
         receiveAppointmentReminders: true,
@@ -245,7 +245,7 @@ function createSeedCareCircle(): CareCircleState {
         status: 'taken',
         actionAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 4).toISOString(),
         loggedByRole: 'elder',
-        loggedByName: 'Smt. Kamala Devi',
+        loggedByName: 'Primary Care Patient',
       },
       {
         id: 'log-seed-2',
@@ -257,7 +257,7 @@ function createSeedCareCircle(): CareCircleState {
         status: 'taken',
         actionAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 35).toISOString(),
         loggedByRole: 'elder',
-        loggedByName: 'Smt. Kamala Devi',
+        loggedByName: 'Primary Care Patient',
       },
       {
         id: 'log-seed-y1',
@@ -269,7 +269,7 @@ function createSeedCareCircle(): CareCircleState {
         status: 'taken',
         actionAt: yesterday.toISOString(),
         loggedByRole: 'elder',
-        loggedByName: 'Smt. Kamala Devi',
+        loggedByName: 'Primary Care Patient',
       },
       {
         id: 'log-seed-y2',
@@ -281,7 +281,7 @@ function createSeedCareCircle(): CareCircleState {
         status: 'taken',
         actionAt: yesterday.toISOString(),
         loggedByRole: 'elder',
-        loggedByName: 'Smt. Kamala Devi',
+        loggedByName: 'Primary Care Patient',
       },
       {
         id: 'log-seed-y3',
@@ -293,7 +293,7 @@ function createSeedCareCircle(): CareCircleState {
         status: 'taken',
         actionAt: yesterday.toISOString(),
         loggedByRole: 'elder',
-        loggedByName: 'Smt. Kamala Devi',
+        loggedByName: 'Primary Care Patient',
       },
       {
         id: 'log-seed-y4',
@@ -306,7 +306,7 @@ function createSeedCareCircle(): CareCircleState {
         reason: 'Felt slightly lightheaded before dinner; checked BP (114/72)',
         actionAt: yesterday.toISOString(),
         loggedByRole: 'elder',
-        loggedByName: 'Smt. Kamala Devi',
+        loggedByName: 'Primary Care Patient',
       },
       {
         id: 'log-seed-y5',
@@ -318,7 +318,7 @@ function createSeedCareCircle(): CareCircleState {
         status: 'taken',
         actionAt: yesterday.toISOString(),
         loggedByRole: 'elder',
-        loggedByName: 'Smt. Kamala Devi',
+        loggedByName: 'Primary Care Patient',
       },
     ],
     appointments: [
@@ -365,7 +365,7 @@ function createSeedCareCircle(): CareCircleState {
         unit: 'mmHg',
         status: 'normal',
         notes: 'Measured sitting calmly after morning walk',
-        recordedBy: 'Smt. Kamala Devi',
+        recordedBy: 'Primary Care Patient',
         recordedAt: new Date(now.getTime() - 2 * 3600000).toISOString(),
       },
       {
@@ -376,7 +376,7 @@ function createSeedCareCircle(): CareCircleState {
         unit: 'mg/dL (Fasting)',
         status: 'normal',
         notes: 'Within target geriatric range (90–130 mg/dL)',
-        recordedBy: 'Ananya Rao (Caretaker)',
+        recordedBy: 'Primary Caretaker (Clinical Staff)',
         recordedAt: new Date(now.getTime() - 3 * 3600000).toISOString(),
       },
       {
@@ -387,7 +387,7 @@ function createSeedCareCircle(): CareCircleState {
         unit: 'glasses',
         status: 'normal',
         notes: 'Warm water and buttermilk',
-        recordedBy: 'Smt. Kamala Devi',
+        recordedBy: 'Primary Care Patient',
         recordedAt: new Date(now.getTime() - 1 * 3600000).toISOString(),
       },
     ],
@@ -397,11 +397,11 @@ function createSeedCareCircle(): CareCircleState {
         idempotencyKey: `${DEFAULT_CIRCLE_ID}:upcoming_dose:med-1:${todayKey}`,
         circleId: DEFAULT_CIRCLE_ID,
         category: 'upcoming_dose',
-        subject: '⏰ Morning Medication Reminder: Thyronorm 50mcg (7:00 AM)',
-        recipientEmails: ['geeteshgollapalli@gmail.com'],
-        recipientNames: ['Smt. Kamala Devi', 'Ananya Rao'],
+        subject: 'Morning Medication Reminder: Thyronorm 50mcg (7:00 AM)',
+        recipientEmails: ['family@kindredcare.health'],
+        recipientNames: ['Primary Care Patient', 'Primary Caretaker'],
         bodyPreview:
-          'Good morning Kamala Ji! Your Thyronorm 50mcg is scheduled for 7:00 AM on an empty stomach.',
+          'Good morning! Your Thyronorm 50mcg is scheduled for 7:00 AM on an empty stomach.',
         status: 'sent',
         transport: 'gmail_smtp',
         sentAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 6, 45).toISOString(),
@@ -411,7 +411,7 @@ function createSeedCareCircle(): CareCircleState {
       {
         id: 'note-1',
         circleId: DEFAULT_CIRCLE_ID,
-        authorName: 'Smt. Kamala Devi',
+        authorName: 'Primary Care Patient',
         role: 'elder',
         category: 'question_for_doctor',
         message:
@@ -421,11 +421,11 @@ function createSeedCareCircle(): CareCircleState {
       {
         id: 'note-2',
         circleId: DEFAULT_CIRCLE_ID,
-        authorName: 'Geetesh Gollapalli',
+        authorName: 'Family Coordinator',
         role: 'family',
         category: 'encouragement',
         message:
-          'Dadi, I ordered your Shelcal 500 refill from Apollo Pharmacy—delivering this evening! Proud of your 7-day morning streak ❤️',
+          'Ordered your Shelcal 500 refill from Apollo Pharmacy — delivering this evening. Great work on your 7-day morning streak.',
         createdAt: new Date(now.getTime() - 4 * 3600000).toISOString(),
       },
     ],

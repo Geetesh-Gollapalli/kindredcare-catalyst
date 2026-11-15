@@ -20,7 +20,7 @@ export function KindredCareLogo({
     <div className="inline-flex items-center gap-3 select-none">
       <div
         style={{ width: size, height: size }}
-        className="relative flex shrink-0 items-center justify-center rounded-xl bg-[#0F524B] text-white shadow-sm ring-1 ring-black/10"
+        className="relative flex shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-white shadow-sm ring-1 ring-white/15"
         aria-hidden="true"
       >
         <svg
@@ -33,7 +33,7 @@ export function KindredCareLogo({
           {/* Protective Care Arc */}
           <path
             d="M4.5 18.5C4.5 24.5 9.6 28.5 16 28.5C22.4 28.5 27.5 24.5 27.5 18.5"
-            stroke="#FBBF24"
+            stroke="#5227FF"
             strokeWidth="2.4"
             strokeLinecap="round"
           />
@@ -41,12 +41,12 @@ export function KindredCareLogo({
           <path
             d="M16 23.2L8.9 16.4C6.8 14.3 6.8 10.9 8.9 8.8C10.9 6.8 14.1 7 16 9.2C17.9 7 21.1 6.8 23.1 8.8C25.2 10.9 25.2 14.3 23.1 16.4L16 23.2Z"
             fill="#FFFFFF"
-            fillOpacity="0.95"
+            fillOpacity="0.96"
           />
           {/* Clinical Cross inside Heart */}
           <path
             d="M16 11.4V17.4M13 14.4H19"
-            stroke="#0F524B"
+            stroke="#09090b"
             strokeWidth="2.4"
             strokeLinecap="round"
           />
@@ -55,15 +55,15 @@ export function KindredCareLogo({
       {showWordmark && (
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5">
-            <span className="font-display text-lg font-bold tracking-tight text-[#14171A]">
+            <span className="font-display text-lg font-bold tracking-tight text-[#f5f5f5]">
               KindredCare
             </span>
-            <span className="rounded-md bg-[#0F524B]/10 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#0F524B]">
+            <span className="rounded-md bg-[#5227FF]/20 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-violet-300 ring-1 ring-[#5227FF]/35">
               AI
             </span>
           </div>
           {subtitle && (
-            <span className="text-xs font-medium text-[#57606A]">{subtitle}</span>
+            <span className="text-xs font-medium text-zinc-400">{subtitle}</span>
           )}
         </div>
       )}
@@ -105,7 +105,7 @@ export function PillBadgeSvg({
   return (
     <div
       style={{ width: size, height: size }}
-      className="inline-flex shrink-0 items-center justify-center rounded-xl border border-black/10 bg-[#F6F5F1] shadow-inner"
+      className="inline-flex shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-900 shadow-inner"
       title={`${colorName} ${shape} pill (Imprint: ${code})`}
     >
       <svg width={size - 6} height={size - 6} viewBox="0 0 44 44" aria-hidden="true">
@@ -232,75 +232,75 @@ export const ELDER_LOCALE_TEXT: Record<
 > = {
   English: {
     langCode: 'en-IN',
-    greeting: 'Good Morning, Kamala Ji',
+    greeting: 'Good Morning',
     todaysMedsTab: "Today's Medicines",
     doctorVisitsTab: 'My Doctor Visits',
     privacyHelpTab: 'My Privacy & Help',
     nextDoseHeadline: 'Your Next Medicine',
-    takeNowBtn: '✓ I Took This Pill',
-    readAloudBtn: '🔊 Read Aloud to Me',
-    snoozeBtn: '⏰ Remind in 15 Mins',
-    allCaughtUp: 'Wonderful! You have completed all your daily medicines today.',
-    sosBtn: '🚨 I Need Help / Alert Caretaker & Family',
+    takeNowBtn: 'I Took This Pill',
+    readAloudBtn: 'Read Aloud to Me',
+    snoozeBtn: 'Remind in 15 Mins',
+    allCaughtUp: 'All scheduled daily medicines are completed for today.',
+    sosBtn: 'I Need Help / Alert Caretaker & Family',
   },
   Hindi: {
     langCode: 'hi-IN',
-    greeting: 'सुप्रभात, कमला जी (Good Morning)',
+    greeting: 'सुप्रभात (Good Morning)',
     todaysMedsTab: 'आज की दवाइयाँ (Today’s Medicines)',
     doctorVisitsTab: 'डॉक्टर अपॉइंटमेंट (Doctor Visits)',
     privacyHelpTab: 'मेरी गोपनीयता और मदद (Privacy & Help)',
     nextDoseHeadline: 'आपकी अगली दवा (Next Medicine)',
-    takeNowBtn: '✓ मैंने यह दवा ले ली (I Took This)',
-    readAloudBtn: '🔊 बोलकर सुनाएं (Read Aloud)',
-    snoozeBtn: '⏰ 15 मिनट बाद याद दिलाएं',
+    takeNowBtn: 'मैंने यह दवा ले ली (I Took This)',
+    readAloudBtn: 'बोलकर सुनाएं (Read Aloud)',
+    snoozeBtn: '15 मिनट बाद याद दिलाएं',
     allCaughtUp: 'बहुत बढ़िया! आज की सभी नियमित दवाइयाँ पूरी हो गईं।',
-    sosBtn: '🚨 मुझे तुरंत मदद चाहिए (Alert Family & Nurse)',
+    sosBtn: 'मुझे तुरंत मदद चाहिए (Alert Family & Nurse)',
   },
   Telugu: {
     langCode: 'te-IN',
-    greeting: 'శుభోదయం, కమల గారు (Good Morning)',
+    greeting: 'శుభోదయం (Good Morning)',
     todaysMedsTab: 'నేటి మందులు (Today’s Medicines)',
     doctorVisitsTab: 'డాక్టర్ దర్శనాలు (Doctor Visits)',
     privacyHelpTab: 'గోప్యత & సహాయం (Privacy & Help)',
     nextDoseHeadline: 'మీ తదుపరి మందు (Next Medicine)',
-    takeNowBtn: '✓ నేను ఈ మందు వేసుకున్నాను (I Took This)',
-    readAloudBtn: '🔊 చదివి వినిపించు (Read Aloud)',
-    snoozeBtn: '⏰ 15 నిమిషాల్లో గుర్తు చేయి',
+    takeNowBtn: 'నేను ఈ మందు వేసుకున్నాను (I Took This)',
+    readAloudBtn: 'చదివి వినిపించు (Read Aloud)',
+    snoozeBtn: '15 నిమిషాల్లో గుర్తు చేయి',
     allCaughtUp: 'చాలా మంచిది! ఈరోజు మందులన్నీ పూర్తయ్యాయి.',
-    sosBtn: '🚨 నాకు సహాయం కావాలి (Alert Caretaker & Family)',
+    sosBtn: 'నాకు సహాయం కావాలి (Alert Caretaker & Family)',
   },
   Tamil: {
     langCode: 'ta-IN',
-    greeting: 'காலை வணக்கம், கமலா அம்மா (Good Morning)',
+    greeting: 'காலை வணக்கம் (Good Morning)',
     todaysMedsTab: 'இன்றைய மருந்துகள் (Today’s Medicines)',
     doctorVisitsTab: 'மருத்துவர் சந்திப்பு (Doctor Visits)',
     privacyHelpTab: 'தனியுரிமை & உதவி (Privacy & Help)',
     nextDoseHeadline: 'அடுத்த மருந்து (Next Medicine)',
-    takeNowBtn: '✓ நான் மாத்திரை போட்டேன் (I Took This)',
-    readAloudBtn: '🔊 சத்தமாக வாசி (Read Aloud)',
-    snoozeBtn: '⏰ 15 நிமிடத்தில் நினைவூட்டு',
+    takeNowBtn: 'நான் மாத்திரை போட்டேன் (I Took This)',
+    readAloudBtn: 'சத்தமாக வாசி (Read Aloud)',
+    snoozeBtn: '15 நிமிடத்தில் நினைவூட்டு',
     allCaughtUp: 'மிக சிறப்பு! இன்றைய அனைத்து மருந்துகளும் முடிந்தன.',
-    sosBtn: '🚨 எனக்கு உதவி தேவை (Alert Family)',
+    sosBtn: 'எனக்கு உதவி தேவை (Alert Family)',
   },
   Spanish: {
     langCode: 'es-ES',
-    greeting: 'Buenos Días, Señora Kamala',
+    greeting: 'Buenos Días',
     todaysMedsTab: 'Medicinas de Hoy',
     doctorVisitsTab: 'Visitas al Médico',
     privacyHelpTab: 'Privacidad y Ayuda',
     nextDoseHeadline: 'Su Próxima Medicina',
-    takeNowBtn: '✓ Ya Tomé Esta Pastilla',
-    readAloudBtn: '🔊 Leer en Voz Alta',
-    snoozeBtn: '⏰ Recordar en 15m',
-    allCaughtUp: '¡Excelente! Ha completado todas sus medicinas de hoy.',
-    sosBtn: '🚨 Necesito Ayuda Ahora',
+    takeNowBtn: 'Ya Tomé Esta Pastilla',
+    readAloudBtn: 'Leer en Voz Alta',
+    snoozeBtn: 'Recordar en 15m',
+    allCaughtUp: 'Ha completado todas sus medicinas programadas de hoy.',
+    sosBtn: 'Necesito Ayuda Ahora',
   },
 };
 
 export function speakAloud(text: string, language = 'English', onToast?: (msg: string) => void) {
   const locale = ELDER_LOCALE_TEXT[language]?.langCode || 'en-IN';
   if (onToast) {
-    onToast(`🔊 Speaking (${language}): "${text.slice(0, 80)}${text.length > 80 ? '...' : ''}"`);
+    onToast(`Speaking (${language}): "${text.slice(0, 80)}${text.length > 80 ? '...' : ''}"`);
   }
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     try {
@@ -324,7 +324,7 @@ export function ensureSafeCircleState(raw: Partial<CareCircleState> | null | und
   return {
     circleId: raw?.circleId || 'circle-kc-2026',
     circleCode: raw?.circleCode || 'KC-2026',
-    elderName: raw?.elderName || 'Smt. Kamala Devi',
+    elderName: raw?.elderName || 'Primary Care Profile',
     elderAge: typeof raw?.elderAge === 'number' ? raw.elderAge : 74,
     bloodGroup: raw?.bloodGroup || 'O+',
     allergies: Array.isArray(raw?.allergies) ? raw.allergies : ['Penicillin', 'Sulfa drugs'],

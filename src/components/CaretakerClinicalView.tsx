@@ -1,6 +1,28 @@
 'use client';
 
 import React, { useState } from 'react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  Alert02Icon,
+  AnalyticsUpIcon,
+  Calendar03Icon,
+  Camera01Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  Delete02Icon,
+  Download04Icon,
+  Edit02Icon,
+  Location01Icon,
+  MailSend01Icon,
+  Medicine01Icon,
+  NoteEditIcon,
+  PlusSignIcon,
+  PrinterIcon,
+  SparklesIcon,
+  Stethoscope02Icon,
+  Undo02Icon,
+  ZapIcon,
+} from '@hugeicons/core-free-icons';
 import { PillBadgeSvg } from './KindredCareBrand';
 import AnimatedList from './AnimatedList';
 import type { ProfileAuditEntry, ProfileMedItem } from './ElderProfileModal';
@@ -207,10 +229,19 @@ export function CaretakerClinicalView({
   );
 
   // Email Preview & Recipient
-  const [customRecipient, setCustomRecipient] = useState('geeteshgollapalli@gmail.com');
+  const [customRecipient, setCustomRecipient] = useState('');
   const [previewEmail, setPreviewEmail] = useState<CaretakerEmailItem | null>(null);
   const [runningSafetyAi, setRunningSafetyAi] = useState(false);
   const [runningBriefAi, setRunningBriefAi] = useState(false);
+
+  const responderOptions = Array.from(
+    new Set([
+      ...(onDutyResponder ? [onDutyResponder] : []),
+      'Primary Caretaker (Day Shift)',
+      'Family Coordinator (Evening Shift)',
+      'Night Relief Nurse (On-Call)',
+    ])
+  );
 
   const dailyMeds = medications.filter((m) => m.scheduleType === 'daily');
   const takenCount = dailyMeds.filter((m) => m.status === 'taken').length;
@@ -294,7 +325,7 @@ export function CaretakerClinicalView({
               }
             : null
         );
-        onToast(`✨ AI filled purpose for ${editingMed.med.name}`);
+        onToast(`AI filled purpose for ${editingMed.med.name}`);
       }
     } finally {
       setAskingAiPurpose(false);
@@ -302,11 +333,11 @@ export function CaretakerClinicalView({
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 pb-16">
+    <div className="mx-auto max-w-6xl space-y-6 pb-16 text-[#f5f5f5]">
       {/* =========================================================
           4 FOCUSED CLINICAL TABS FOR CARETAKER
           ========================================================= */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white p-2 shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-zinc-950 p-2 shadow-xl">
         <div className="flex flex-wrap gap-1.5">
           {[
             { id: 'shift', label: '1. Shift & Daily Administration' },
@@ -320,8 +351,8 @@ export function CaretakerClinicalView({
               onClick={() => setTab(tItem.id as typeof tab)}
               className={`rounded-xl px-4 py-2.5 text-xs font-bold transition ${
                 tab === tItem.id
-                  ? 'bg-[#0F524B] text-white shadow-xs'
-                  : 'text-[#57606A] hover:bg-[#F6F5F1] hover:text-[#14171A]'
+                  ? 'bg-[#5227FF] text-white shadow-sm'
+                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-[#f5f5f5]'
               }`}
             >
               {tItem.label}
@@ -332,9 +363,10 @@ export function CaretakerClinicalView({
         <button
           type="button"
           onClick={onOpenFridgeSheet}
-          className="rounded-xl border border-black/15 bg-[#F6F5F1] px-3.5 py-2 text-xs font-bold text-[#14171A]"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
         >
-          🖨️ Printable Fridge Sheet
+          <HugeiconsIcon icon={PrinterIcon} size={14} strokeWidth={2} />
+          Printable Fridge Sheet
         </button>
       </div>
 
@@ -345,16 +377,17 @@ export function CaretakerClinicalView({
         <div className="space-y-6">
           {/* Active Symptom-to-Medication Clinical Correlation Banner */}
           {currentFeeling !== 'Feeling Good' && (
-            <div className="rounded-2xl border-2 border-red-300 bg-red-50 p-5">
+            <div className="rounded-2xl border border-red-500/40 bg-red-950/35 p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <span className="rounded bg-red-700 px-2.5 py-0.5 text-xs font-bold uppercase text-white">
-                    🩺 Active Symptom-to-Drug Clinical Correlation
+                  <span className="inline-flex items-center gap-1.5 rounded bg-red-600 px-2.5 py-0.5 text-xs font-bold uppercase text-white">
+                    <HugeiconsIcon icon={Stethoscope02Icon} size={13} strokeWidth={2} />
+                    Active Symptom-to-Drug Clinical Correlation
                   </span>
-                  <h3 className="mt-1.5 text-lg font-bold text-red-950">
+                  <h3 className="mt-1.5 text-lg font-bold text-red-100">
                     {elderName} reported “{currentFeeling}” today
                   </h3>
-                  <p className="mt-0.5 text-xs text-red-900">
+                  <p className="mt-0.5 text-xs text-red-200/90">
                     {currentFeeling === 'Slightly Dizzy'
                       ? 'Correlation Alert: Review evening Amlopres 5 (Amlodipine 5mg) — known to cause postural blood pressure drops in patients >70 yrs. Check sitting & standing BP before administering evening dose.'
                       : 'Correlation Alert: Review morning Glycomet SR 500 (Metformin) & meal timing — verify full meal intake and hydration.'}
@@ -368,9 +401,10 @@ export function CaretakerClinicalView({
                     setVitalNotes(`Checked after "${currentFeeling}" report`);
                     onToast('Pre-filled BP check in Vitals Logger below.');
                   }}
-                  className="rounded-xl bg-red-800 px-4 py-2.5 text-xs font-bold text-white"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-red-500"
                 >
-                  + Log Immediate BP Check
+                  <HugeiconsIcon icon={PlusSignIcon} size={14} strokeWidth={2} />
+                  Log Immediate BP Check
                 </button>
               </div>
             </div>
@@ -378,49 +412,49 @@ export function CaretakerClinicalView({
 
           {/* KPI Strip */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-2xl border border-black/10 bg-white p-4">
-              <div className="text-xs font-semibold text-[#57606A]">Today’s Adherence</div>
-              <div className="mt-1 text-2xl font-extrabold text-[#0F524B]">{pct}%</div>
-              <div className="text-xs text-[#57606A]">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+              <div className="text-xs font-semibold text-zinc-400">Today’s Adherence</div>
+              <div className="mt-1 text-2xl font-extrabold text-[#a78bfa]">{pct}%</div>
+              <div className="text-xs text-zinc-500">
                 {takenCount} of {dailyMeds.length} daily doses confirmed
               </div>
             </div>
-            <div className="rounded-2xl border border-black/10 bg-white p-4">
-              <div className="text-xs font-semibold text-[#57606A]">Low Refill Alerts</div>
-              <div className="mt-1 text-2xl font-extrabold text-amber-700">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+              <div className="text-xs font-semibold text-zinc-400">Low Refill Alerts</div>
+              <div className="mt-1 text-2xl font-extrabold text-amber-400">
                 {lowStockMeds.length}
               </div>
-              <div className="text-xs text-[#57606A]">
+              <div className="text-xs text-zinc-500">
                 {lowStockMeds.map((m) => m.name).join(', ') || 'All stocked'}
               </div>
             </div>
-            <div className="rounded-2xl border border-black/10 bg-white p-4">
-              <div className="text-xs font-semibold text-[#57606A]">Patient Feeling</div>
-              <div className="mt-1 text-lg font-extrabold text-[#14171A]">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+              <div className="text-xs font-semibold text-zinc-400">Patient Feeling</div>
+              <div className="mt-1 text-lg font-extrabold text-[#f5f5f5]">
                 {currentFeeling}
               </div>
-              <div className="text-xs text-[#57606A]">Grace window: {graceMinutes}m</div>
+              <div className="text-xs text-zinc-500">Grace window: {graceMinutes}m</div>
             </div>
-            <div className="rounded-2xl border border-black/10 bg-white p-4">
-              <div className="text-xs font-semibold text-[#57606A]">On-Duty Responder</div>
-              <div className="mt-1 text-base font-extrabold text-[#14171A]">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+              <div className="text-xs font-semibold text-zinc-400">On-Duty Responder</div>
+              <div className="mt-1 text-base font-extrabold text-[#f5f5f5]">
                 {onDutyResponder.split(' (')[0]}
               </div>
-              <div className="text-xs text-[#57606A]">Updated: {lastHandoffAt}</div>
+              <div className="text-xs text-zinc-500">Updated: {lastHandoffAt}</div>
             </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Left 2 cols: Live Today's Dose Administration Table */}
-            <div className="lg:col-span-2 rounded-2xl border border-black/10 bg-white p-5">
-              <h3 className="text-base font-bold text-[#14171A]">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 lg:col-span-2">
+              <h3 className="text-base font-bold text-[#f5f5f5]">
                 Today’s Medication Administration &amp; Stock Control
               </h3>
               <div className="mt-4 space-y-2.5">
                 {medications.map((m) => (
                   <div
                     key={m.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-black/10 bg-[#F6F5F1] p-3.5"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-800 bg-zinc-900/90 p-3.5"
                   >
                     <div className="flex items-center gap-3">
                       <PillBadgeSvg
@@ -430,19 +464,19 @@ export function CaretakerClinicalView({
                         size={42}
                       />
                       <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-[#14171A]">{m.name}</span>
-                          <span className="rounded bg-white px-2 py-0.5 text-[11px] font-bold">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-bold text-[#f5f5f5]">{m.name}</span>
+                          <span className="rounded border border-zinc-700 bg-zinc-950 px-2 py-0.5 text-[11px] font-bold text-zinc-200">
                             {m.time}
                           </span>
                           {m.stock <= 7 && (
-                            <span className="rounded bg-red-100 px-2 py-0.5 text-[10px] font-extrabold text-red-800">
+                            <span className="rounded border border-red-500/30 bg-red-500/15 px-2 py-0.5 text-[10px] font-extrabold text-red-400">
                               LOW: {m.stock} LEFT
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-[#57606A]">
-                          {m.purpose} • <strong>{m.mealTiming}</strong>
+                        <div className="text-xs text-zinc-400">
+                          {m.purpose} • <strong className="text-zinc-200">{m.mealTiming}</strong>
                         </div>
                       </div>
                     </div>
@@ -450,14 +484,16 @@ export function CaretakerClinicalView({
                     <div className="flex items-center gap-2">
                       {m.status === 'taken' ? (
                         <>
-                          <span className="rounded-lg bg-[#0E6B50]/15 px-2.5 py-1 text-xs font-bold text-[#0E6B50]">
-                            ✓ Taken ({m.takenAt})
+                          <span className="inline-flex items-center gap-1 rounded-lg border border-[#5227FF]/40 bg-[#5227FF]/15 px-2.5 py-1 text-xs font-bold text-[#c4b5fd]">
+                            <HugeiconsIcon icon={CheckmarkCircle02Icon} size={13} strokeWidth={2} />
+                            Taken ({m.takenAt})
                           </span>
                           <button
                             type="button"
                             onClick={() => onUndoMed(m.id)}
-                            className="rounded-lg border border-black/15 bg-white px-2.5 py-1 text-xs font-semibold text-[#57606A]"
+                            className="inline-flex items-center gap-1 rounded-lg border border-zinc-700 bg-zinc-950 px-2.5 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-800"
                           >
+                            <HugeiconsIcon icon={Undo02Icon} size={12} strokeWidth={2} />
                             Undo
                           </button>
                         </>
@@ -465,15 +501,16 @@ export function CaretakerClinicalView({
                         <button
                           type="button"
                           onClick={() => onTakeMed(m.id)}
-                          className="rounded-lg bg-[#0F524B] px-3.5 py-1.5 text-xs font-bold text-white"
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#5227FF] px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-[#421cd9]"
                         >
-                          ✓ Confirm Dose
+                          <HugeiconsIcon icon={CheckmarkCircle02Icon} size={13} strokeWidth={2} />
+                          Confirm Dose
                         </button>
                       )}
                       <button
                         type="button"
                         onClick={() => onRefillMed(m.id)}
-                        className="rounded-lg border border-black/15 bg-white px-2.5 py-1.5 text-xs font-bold text-[#14171A]"
+                        className="rounded-lg border border-zinc-700 bg-zinc-950 px-2.5 py-1.5 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
                       >
                         +30 Stock
                       </button>
@@ -486,46 +523,42 @@ export function CaretakerClinicalView({
             {/* Right Col: Shift Handoff + Vitals Logger */}
             <div className="space-y-6">
               {/* Shift Handoff */}
-              <div className="rounded-2xl border border-black/10 bg-white p-5">
-                <h3 className="text-base font-bold text-[#14171A]">
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+                <h3 className="text-base font-bold text-[#f5f5f5]">
                   Caretaker Shift Handoff
                 </h3>
                 <div className="mt-3 space-y-3">
                   <div>
-                    <label className="block text-xs font-semibold text-[#57606A]">
+                    <label className="block text-xs font-semibold text-zinc-400">
                       On-Duty Responder
                     </label>
                     <select
                       value={responderInput}
                       onChange={(e) => setResponderInput(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-xs font-bold"
+                      className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs font-bold text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                     >
-                      <option value="Ananya Rao (Primary Caretaker)">
-                        Ananya Rao (Primary Caretaker)
-                      </option>
-                      <option value="Geetesh Gollapalli (Family Evening Shift)">
-                        Geetesh Gollapalli (Family Evening Shift)
-                      </option>
-                      <option value="Nurse Priya (Night Relief)">
-                        Nurse Priya (Night Relief)
-                      </option>
+                      {responderOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#57606A]">
+                    <label className="block text-xs font-semibold text-zinc-400">
                       Clinical Shift Note
                     </label>
                     <textarea
                       rows={2}
                       value={handoffInput}
                       onChange={(e) => setHandoffInput(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => onSaveShiftHandoff(responderInput, handoffInput)}
-                    className="w-full rounded-xl bg-[#0F524B] py-2.5 text-xs font-bold text-white"
+                    className="w-full rounded-xl bg-[#5227FF] py-2.5 text-xs font-bold text-white transition hover:bg-[#421cd9]"
                   >
                     Save Timestamped Shift Handoff
                   </button>
@@ -533,15 +566,15 @@ export function CaretakerClinicalView({
               </div>
 
               {/* Log Vital Reading */}
-              <div className="rounded-2xl border border-black/10 bg-white p-5">
-                <h3 className="text-base font-bold text-[#14171A]">
+              <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+                <h3 className="text-base font-bold text-[#f5f5f5]">
                   Log Clinical Vital Reading
                 </h3>
                 <div className="mt-3 space-y-2.5">
                   <select
                     value={vitalType}
                     onChange={(e) => setVitalType(e.target.value)}
-                    className="w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-xs font-bold"
+                    className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs font-bold text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                   >
                     <option value="Blood Pressure">Blood Pressure (mmHg)</option>
                     <option value="Blood Glucose">Blood Glucose (mg/dL)</option>
@@ -553,14 +586,14 @@ export function CaretakerClinicalView({
                     value={vitalVal}
                     onChange={(e) => setVitalVal(e.target.value)}
                     placeholder="e.g., 124/78 mmHg or 112 mg/dL"
-                    className="w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                    className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                   />
                   <input
                     type="text"
                     value={vitalNotes}
                     onChange={(e) => setVitalNotes(e.target.value)}
                     placeholder="Context (e.g., Fasting / After walk)"
-                    className="w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                    className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                   />
                   <button
                     type="button"
@@ -570,31 +603,32 @@ export function CaretakerClinicalView({
                       setVitalVal('');
                       setVitalNotes('');
                     }}
-                    className="w-full rounded-xl bg-[#14171A] py-2.5 text-xs font-bold text-white"
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-800 py-2.5 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-700"
                   >
-                    + Save Vital Reading
+                    <HugeiconsIcon icon={PlusSignIcon} size={14} strokeWidth={2} />
+                    Save Vital Reading
                   </button>
                 </div>
 
-                <div className="mt-4 space-y-2 border-t border-black/10 pt-3">
+                <div className="mt-4 space-y-2 border-t border-zinc-800 pt-3">
                   {vitals.slice(0, 3).map((v) => (
                     <div
                       key={v.id}
-                      className="flex items-center justify-between rounded-lg bg-[#F6F5F1] px-3 py-2 text-xs"
+                      className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs"
                     >
                       <div>
-                        <strong>
+                        <strong className="text-[#f5f5f5]">
                           {v.type}: {v.value}
                         </strong>
-                        <div className="text-[11px] text-[#57606A]">{v.notes}</div>
+                        <div className="text-[11px] text-zinc-400">{v.notes}</div>
                       </div>
                       <span
                         className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
                           v.status === 'attention'
-                            ? 'bg-red-100 text-red-800'
+                            ? 'border border-red-500/30 bg-red-500/15 text-red-400'
                             : v.status === 'elevated'
-                              ? 'bg-amber-100 text-amber-900'
-                              : 'bg-[#0E6B50]/15 text-[#0E6B50]'
+                              ? 'border border-amber-500/30 bg-amber-500/15 text-amber-300'
+                              : 'border border-[#5227FF]/35 bg-[#5227FF]/15 text-[#c4b5fd]'
                         }`}
                       >
                         {v.status}
@@ -626,10 +660,10 @@ export function CaretakerClinicalView({
                   key={f.id}
                   type="button"
                   onClick={() => setMedFilter(f.id as typeof medFilter)}
-                  className={`rounded-xl px-3.5 py-2 text-xs font-bold ${
+                  className={`rounded-xl px-3.5 py-2 text-xs font-bold transition ${
                     medFilter === f.id
-                      ? 'bg-[#14171A] text-white'
-                      : 'border border-black/10 bg-white text-[#57606A]'
+                      ? 'bg-[#5227FF] text-white'
+                      : 'border border-zinc-800 bg-zinc-950 text-zinc-400 hover:bg-zinc-900 hover:text-[#f5f5f5]'
                   }`}
                 >
                   {f.label}
@@ -641,9 +675,10 @@ export function CaretakerClinicalView({
               <button
                 type="button"
                 onClick={() => setShowRxScanner(true)}
-                className="rounded-xl border border-[#0F524B] bg-[#0F524B]/5 px-4 py-2.5 text-xs font-bold text-[#0F524B]"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#5227FF]/45 bg-[#5227FF]/15 px-4 py-2.5 text-xs font-bold text-[#c4b5fd] transition hover:bg-[#5227FF]/25"
               >
-                📷 AI Prescription Scanner (Gemma 4)
+                <HugeiconsIcon icon={Camera01Icon} size={14} strokeWidth={2} />
+                AI Prescription Scanner (Gemma 4)
               </button>
               <button
                 type="button"
@@ -667,9 +702,10 @@ export function CaretakerClinicalView({
                     },
                   })
                 }
-                className="rounded-xl bg-[#0F524B] px-4 py-2.5 text-xs font-bold text-white"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#5227FF] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#421cd9]"
               >
-                + Add Medication
+                <HugeiconsIcon icon={PlusSignIcon} size={14} strokeWidth={2} />
+                Add Medication
               </button>
             </div>
           </div>
@@ -679,7 +715,7 @@ export function CaretakerClinicalView({
             {filteredMeds.map((m) => (
               <article
                 key={m.id}
-                className="rounded-2xl border border-black/10 bg-white p-5 shadow-2xs"
+                className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-xl"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -690,24 +726,24 @@ export function CaretakerClinicalView({
                       size={48}
                     />
                     <div>
-                      <h4 className="text-base font-bold text-[#14171A]">{m.name}</h4>
-                      <div className="text-xs text-[#57606A]">
+                      <h4 className="text-base font-bold text-[#f5f5f5]">{m.name}</h4>
+                      <div className="text-xs text-zinc-400">
                         {m.genericName} • {m.dosage}
                       </div>
                     </div>
                   </div>
-                  <span className="rounded-md bg-[#F6F5F1] px-2.5 py-1 text-xs font-bold uppercase text-[#0F524B]">
+                  <span className="rounded-md border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-1 text-xs font-bold uppercase text-[#c4b5fd]">
                     {m.scheduleType} • {m.time}
                   </span>
                 </div>
 
-                <div className="mt-3 rounded-xl bg-[#F6F5F1] p-3 text-xs">
+                <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-xs text-zinc-300">
                   <div>
-                    <strong className="text-[#0F524B]">Purpose:</strong> {m.purpose}
+                    <strong className="text-[#a78bfa]">Purpose:</strong> {m.purpose}
                   </div>
                   <div className="mt-1">
-                    <strong>Meal Rule:</strong> {m.mealTiming} • <strong>Stock:</strong>{' '}
-                    {m.stock} pills
+                    <strong className="text-zinc-200">Meal Rule:</strong> {m.mealTiming} •{' '}
+                    <strong className="text-zinc-200">Stock:</strong> {m.stock} pills
                   </div>
                 </div>
 
@@ -715,22 +751,24 @@ export function CaretakerClinicalView({
                   <button
                     type="button"
                     onClick={() => setEditingMed({ med: { ...m }, isEdit: true })}
-                    className="rounded-lg border border-black/15 bg-white px-3 py-1.5 text-xs font-bold text-[#14171A] hover:bg-[#F6F5F1]"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
                   >
-                    ✏️ Edit Schedule / Purpose
+                    <HugeiconsIcon icon={Edit02Icon} size={13} strokeWidth={2} />
+                    Edit Schedule / Purpose
                   </button>
                   <button
                     type="button"
                     onClick={() => onRefillMed(m.id)}
-                    className="rounded-lg border border-black/15 bg-white px-3 py-1.5 text-xs font-bold text-[#0F524B]"
+                    className="rounded-lg border border-[#5227FF]/40 bg-[#5227FF]/15 px-3 py-1.5 text-xs font-bold text-[#c4b5fd] transition hover:bg-[#5227FF]/25"
                   >
                     +30 Refill
                   </button>
                   <button
                     type="button"
                     onClick={() => onDeleteMed(m.id)}
-                    className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-700"
+                    className="inline-flex items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-400 transition hover:bg-red-500/20"
                   >
+                    <HugeiconsIcon icon={Delete02Icon} size={13} strokeWidth={2} />
                     Remove
                   </button>
                 </div>
@@ -739,17 +777,17 @@ export function CaretakerClinicalView({
           </div>
 
           {/* Live AI Drug-Interaction & Food-Timing Safety Guard */}
-          <section className="rounded-2xl border border-black/10 bg-white p-6">
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <span className="rounded bg-[#0F524B]/10 px-2.5 py-0.5 text-xs font-bold text-[#0F524B]">
+                <span className="rounded border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-0.5 text-xs font-bold text-[#c4b5fd]">
                   {drugSafetyReport?.providerUsed ||
                     'Google Gemma 4 (Adaption Labs) + Gemini 3 Flash'}
                 </span>
-                <h3 className="mt-1 text-lg font-bold text-[#14171A]">
+                <h3 className="mt-1 text-lg font-bold text-[#f5f5f5]">
                   AI Drug-Interaction &amp; Absorption Safety Guard
                 </h3>
-                <p className="text-xs text-[#57606A]">
+                <p className="text-xs text-zinc-400">
                   Analyzes {elderName}’s active medications and allergies (
                   {allergies.join(', ')}) for absorption conflicts.
                 </p>
@@ -765,11 +803,16 @@ export function CaretakerClinicalView({
                     setRunningSafetyAi(false);
                   }
                 }}
-                className="rounded-xl bg-[#0F524B] px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#5227FF] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#421cd9] disabled:opacity-50"
               >
+                <HugeiconsIcon
+                  icon={runningSafetyAi ? Clock01Icon : SparklesIcon}
+                  size={14}
+                  strokeWidth={2}
+                />
                 {runningSafetyAi
-                  ? '⏳ Analyzing with Gemma 4...'
-                  : '✨ Re-Analyze Active Schedule with AI'}
+                  ? 'Analyzing with Gemma 4...'
+                  : 'Re-Analyze Active Schedule with AI'}
               </button>
             </div>
 
@@ -777,17 +820,18 @@ export function CaretakerClinicalView({
               {(drugSafetyReport?.interactions || []).map((inter, idx) => (
                 <div
                   key={idx}
-                  className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4"
+                  className="rounded-xl border border-zinc-800 bg-zinc-900 p-4"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <strong className="text-sm text-[#14171A]">{inter.summary}</strong>
-                    <span className="rounded bg-white px-2.5 py-0.5 text-xs font-bold uppercase text-[#0F524B]">
+                    <strong className="text-sm text-[#f5f5f5]">{inter.summary}</strong>
+                    <span className="rounded border border-[#5227FF]/30 bg-zinc-950 px-2.5 py-0.5 text-xs font-bold uppercase text-[#c4b5fd]">
                       {inter.medicationsInvolved.join(' + ')}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-[#57606A]">{inter.clinicalMechanism}</p>
-                  <p className="mt-1 text-xs font-semibold text-[#0E6B50]">
-                    ✓ Spacing Rule: {inter.spacingRecommendation}
+                  <p className="mt-1 text-xs text-zinc-400">{inter.clinicalMechanism}</p>
+                  <p className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-[#c4b5fd]">
+                    <HugeiconsIcon icon={CheckmarkCircle02Icon} size={13} strokeWidth={2} />
+                    Spacing Rule: {inter.spacingRecommendation}
                   </p>
                 </div>
               ))}
@@ -795,20 +839,20 @@ export function CaretakerClinicalView({
           </section>
 
           {/* Medication Change Audit Log */}
-          <section className="rounded-2xl border border-black/10 bg-white p-6">
-            <h3 className="text-base font-bold text-[#14171A]">
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6">
+            <h3 className="text-base font-bold text-[#f5f5f5]">
               Medication Schedule &amp; Care Audit Log
             </h3>
             <div className="mt-3 space-y-2">
               {auditLog.slice(0, 6).map((a) => (
                 <div
                   key={a.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#F6F5F1] px-3.5 py-2.5 text-xs"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-xs text-zinc-300"
                 >
                   <div>
-                    <strong className="text-[#0F524B]">{a.actor}:</strong> {a.note}
+                    <strong className="text-[#a78bfa]">{a.actor}:</strong> {a.note}
                   </div>
-                  <span className="font-semibold text-[#57606A]">{a.when}</span>
+                  <span className="font-semibold text-zinc-500">{a.when}</span>
                 </div>
               ))}
             </div>
@@ -822,15 +866,16 @@ export function CaretakerClinicalView({
       {tab === 'appts' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-[#14171A]">
+            <h3 className="text-lg font-bold text-[#f5f5f5]">
               Upcoming Doctor Visits &amp; Post-Visit Outcomes
             </h3>
             <button
               type="button"
               onClick={() => setShowAddAppt(true)}
-              className="rounded-xl bg-[#0F524B] px-4 py-2.5 text-xs font-bold text-white"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#5227FF] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#421cd9]"
             >
-              + Schedule Appointment
+              <HugeiconsIcon icon={PlusSignIcon} size={14} strokeWidth={2} />
+              Schedule Appointment
             </button>
           </div>
 
@@ -844,23 +889,26 @@ export function CaretakerClinicalView({
               return (
                 <article
                   key={appt.id}
-                  className="rounded-2xl border border-black/10 bg-white p-5 shadow-2xs"
+                  className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 shadow-xl"
                 >
-                  <span className="rounded-md bg-[#0F524B]/10 px-2.5 py-1 text-xs font-bold text-[#0F524B]">
+                  <span className="rounded-md border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-1 text-xs font-bold text-[#c4b5fd]">
                     {appt.dateTimeLabel}
                   </span>
-                  <h4 className="mt-2 text-lg font-bold text-[#14171A]">
+                  <h4 className="mt-2 text-lg font-bold text-[#f5f5f5]">
                     {appt.doctorName}
                   </h4>
-                  <div className="text-xs font-semibold text-[#57606A]">
+                  <div className="text-xs font-semibold text-zinc-400">
                     {appt.specialty} • {appt.clinicName}
                   </div>
-                  <p className="mt-2 text-xs text-[#57606A]">{appt.notes}</p>
+                  <p className="mt-2 text-xs text-zinc-400">{appt.notes}</p>
 
                   {/* Post-Visit Outcome Badge (if recorded) */}
                   {appt.postVisitOutcome && (
-                    <div className="mt-3 rounded-xl border border-[#0E6B50]/30 bg-[#0E6B50]/10 p-3 text-xs">
-                      <strong className="text-[#0E6B50]">✓ Recorded Visit Outcome:</strong>{' '}
+                    <div className="mt-3 rounded-xl border border-[#5227FF]/35 bg-[#5227FF]/15 p-3 text-xs text-zinc-200">
+                      <strong className="inline-flex items-center gap-1 text-[#c4b5fd]">
+                        <HugeiconsIcon icon={CheckmarkCircle02Icon} size={13} strokeWidth={2} />
+                        Recorded Visit Outcome:
+                      </strong>{' '}
                       {appt.postVisitOutcome}
                     </div>
                   )}
@@ -870,15 +918,15 @@ export function CaretakerClinicalView({
                     {appt.checklist.map((c) => (
                       <label
                         key={c.id}
-                        className="flex cursor-pointer items-center gap-2 text-xs"
+                        className="flex cursor-pointer items-center gap-2 text-xs text-zinc-200"
                       >
                         <input
                           type="checkbox"
                           checked={c.done}
                           onChange={() => onToggleChecklist(appt.id, c.id)}
-                          className="h-4 w-4 accent-[#0F524B]"
+                          className="h-4 w-4 accent-[#5227FF]"
                         />
-                        <span className={c.done ? 'line-through text-[#57606A]' : ''}>
+                        <span className={c.done ? 'line-through text-zinc-500' : ''}>
                           {c.text}
                         </span>
                       </label>
@@ -890,24 +938,27 @@ export function CaretakerClinicalView({
                       href={gcalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-lg bg-[#0F524B] px-3 py-1.5 text-xs font-bold text-white"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#5227FF] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#421cd9]"
                     >
-                      📅 Google Calendar
+                      <HugeiconsIcon icon={Calendar03Icon} size={13} strokeWidth={2} />
+                      Google Calendar
                     </a>
                     <button
                       type="button"
                       onClick={() => downloadAppointmentIcs(appt, elderName)}
-                      className="rounded-lg border border-black/15 bg-white px-3 py-1.5 text-xs font-bold"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
                     >
-                      ⬇️ .ICS Invite
+                      <HugeiconsIcon icon={Download04Icon} size={13} strokeWidth={2} />
+                      .ICS Invite
                     </button>
                     <a
                       href={gmapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-lg border border-black/15 bg-white px-3 py-1.5 text-xs font-bold"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
                     >
-                      📍 Google Maps
+                      <HugeiconsIcon icon={Location01Icon} size={13} strokeWidth={2} />
+                      Google Maps
                     </a>
                     <button
                       type="button"
@@ -918,9 +969,10 @@ export function CaretakerClinicalView({
                             'Continued current regimen; recheck evening BP in 14 days.'
                         );
                       }}
-                      className="rounded-lg border border-[#0F524B]/30 bg-[#0F524B]/5 px-3 py-1.5 text-xs font-bold text-[#0F524B]"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#5227FF]/40 bg-[#5227FF]/15 px-3 py-1.5 text-xs font-bold text-[#c4b5fd] transition hover:bg-[#5227FF]/25"
                     >
-                      📝 Log Visit Outcome
+                      <HugeiconsIcon icon={NoteEditIcon} size={13} strokeWidth={2} />
+                      Log Visit Outcome
                     </button>
                   </div>
                 </article>
@@ -929,14 +981,14 @@ export function CaretakerClinicalView({
           </div>
 
           {/* AI Pre-Appointment Clinical Brief */}
-          <section className="rounded-2xl border border-black/10 bg-white p-6">
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <span className="rounded bg-[#0F524B]/10 px-2.5 py-0.5 text-xs font-bold text-[#0F524B]">
+                <span className="rounded border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-0.5 text-xs font-bold text-[#c4b5fd]">
                   {aiDoctorBrief?.providerUsed ||
                     'Google Gemma 4 (Adaption Labs) + Gemini 3 Flash'}
                 </span>
-                <h3 className="mt-1 text-lg font-bold text-[#14171A]">
+                <h3 className="mt-1 text-lg font-bold text-[#f5f5f5]">
                   Pre-Appointment Doctor Visit Brief — {elderName} ({elderAge}y, {bloodGroup})
                 </h3>
               </div>
@@ -952,30 +1004,36 @@ export function CaretakerClinicalView({
                       setRunningBriefAi(false);
                     }
                   }}
-                  className="rounded-xl bg-[#0F524B] px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#5227FF] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#421cd9] disabled:opacity-50"
                 >
+                  <HugeiconsIcon
+                    icon={runningBriefAi ? Clock01Icon : SparklesIcon}
+                    size={14}
+                    strokeWidth={2}
+                  />
                   {runningBriefAi
-                    ? '⏳ Generating with AI...'
-                    : '✨ Refresh Brief with Gemma 4 AI'}
+                    ? 'Generating with AI...'
+                    : 'Refresh Brief with Gemma 4 AI'}
                 </button>
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="rounded-xl border border-black/15 px-4 py-2 text-xs font-bold"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
                 >
-                  🖨️ Print Brief
+                  <HugeiconsIcon icon={PrinterIcon} size={14} strokeWidth={2} />
+                  Print Brief
                 </button>
               </div>
             </div>
 
-            <div className="mt-4 space-y-3 rounded-xl bg-[#F6F5F1] p-4 text-xs leading-relaxed">
+            <div className="mt-4 space-y-3 rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-xs leading-relaxed text-zinc-300">
               <p>
-                <strong>Adherence Summary:</strong>{' '}
+                <strong className="text-[#f5f5f5]">Adherence Summary:</strong>{' '}
                 {aiDoctorBrief?.adherenceSummary ||
                   `${elderName} is at ${pct}% daily adherence today (${takenCount}/${dailyMeds.length} doses). Current feeling: ${currentFeeling}.`}
               </p>
               <div>
-                <strong>Vitals Highlights:</strong>
+                <strong className="text-[#f5f5f5]">Vitals Highlights:</strong>
                 <ul className="mt-1 list-disc pl-5">
                   {(
                     aiDoctorBrief?.vitalsHighlights ||
@@ -986,7 +1044,7 @@ export function CaretakerClinicalView({
                 </ul>
               </div>
               <div>
-                <strong>Questions Flagged for Physician:</strong>
+                <strong className="text-[#f5f5f5]">Questions Flagged for Physician:</strong>
                 <ul className="mt-1 list-disc pl-5">
                   {(
                     aiDoctorBrief?.suggestedQuestionsForDoctor || [
@@ -1007,13 +1065,13 @@ export function CaretakerClinicalView({
           ========================================================= */}
       {tab === 'emails' && (
         <div className="space-y-6">
-          <section className="rounded-2xl border border-black/10 bg-white p-6">
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h3 className="text-lg font-bold text-[#14171A]">
+                <h3 className="text-lg font-bold text-[#f5f5f5]">
                   Proactive Email Reminder Engine (Idempotent SMTP Dispatcher)
                 </h3>
-                <p className="text-xs text-[#57606A]">
+                <p className="text-xs text-zinc-400">
                   Automatically dispatches email alerts for overdue doses (after{' '}
                   {graceMinutes}m grace window), upcoming medications, low refills, and
                   doctor appointments.
@@ -1021,23 +1079,25 @@ export function CaretakerClinicalView({
               </div>
               <button
                 type="button"
-                onClick={() => onRunAutoScanEmails(customRecipient)}
-                className="rounded-xl bg-[#0F524B] px-5 py-2.5 text-xs font-bold text-white"
+                onClick={() => onRunAutoScanEmails(customRecipient || undefined)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#5227FF] px-5 py-2.5 text-xs font-bold text-white transition hover:bg-[#421cd9]"
               >
-                ⚡ Run Proactive Auto-Scan Now
+                <HugeiconsIcon icon={ZapIcon} size={14} strokeWidth={2} />
+                Run Proactive Auto-Scan Now
               </button>
             </div>
 
-            {/* Recipient Email Input for Live Judge Testing */}
+            {/* Recipient Email Input */}
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-              <label className="text-xs font-bold text-[#14171A]">
-                Target Recipient Email (Edit to test live delivery):
+              <label className="text-xs font-bold text-zinc-200">
+                Target Recipient Email (Optional override):
               </label>
               <input
                 type="email"
                 value={customRecipient}
                 onChange={(e) => setCustomRecipient(e.target.value)}
-                className="flex-1 rounded-xl border border-black/15 px-3.5 py-2 text-xs font-semibold"
+                placeholder="recipient@example.com (leave blank to use saved family email)"
+                className="flex-1 rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2 text-xs font-semibold text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
               />
             </div>
 
@@ -1046,42 +1106,48 @@ export function CaretakerClinicalView({
               {[
                 {
                   cat: 'upcoming_dose',
-                  label: '⏰ Send Upcoming Dose Reminder',
-                  subject: '⏰ Upcoming Dose Reminder: Shelcal 500 at 1:30 PM',
+                  icon: Clock01Icon,
+                  label: 'Send Upcoming Dose Reminder',
+                  subject: 'Upcoming Dose Reminder: Shelcal 500 at 1:30 PM',
                   preview:
                     'Take 1 sky-blue oval tablet after lunch (spaced 6h from morning Thyronorm).',
                 },
                 {
                   cat: 'missed_dose_escalation',
-                  label: `⚠️ Send Missed Dose Alert (${graceMinutes}m Grace)`,
-                  subject: `⚠️ Missed Dose Escalation (${graceMinutes}m Grace Elapsed): Shelcal 500`,
-                  preview: `${elderName} has not confirmed her 1:30 PM Shelcal 500 dose after her ${graceMinutes}-minute grace window.`,
+                  icon: Alert02Icon,
+                  label: `Send Missed Dose Alert (${graceMinutes}m Grace)`,
+                  subject: `Missed Dose Escalation (${graceMinutes}m Grace Elapsed): Shelcal 500`,
+                  preview: `${elderName} has not confirmed their 1:30 PM Shelcal 500 dose after the ${graceMinutes}-minute grace window.`,
                 },
                 {
                   cat: 'appointment_reminder',
-                  label: '📅 Send 24h Appointment Reminder',
-                  subject: '📅 Doctor Appointment Reminder: Dr. Rajesh Sharma Tomorrow',
+                  icon: Calendar03Icon,
+                  label: 'Send 24h Appointment Reminder',
+                  subject: 'Doctor Appointment Reminder: Dr. Rajesh Sharma Tomorrow',
                   preview:
                     'Apollo Senior Heart Centre • Prep checklist & Google Maps directions included.',
                 },
                 {
                   cat: 'low_refill',
-                  label: '💊 Send Low-Refill Pharmacy Alert',
-                  subject: '💊 Refill Warning: Shelcal 500 (4 Tablets Remaining)',
+                  icon: Medicine01Icon,
+                  label: 'Send Low-Refill Pharmacy Alert',
+                  subject: 'Refill Warning: Shelcal 500 (4 Tablets Remaining)',
                   preview:
                     'Supply is below threshold (7 tablets). Please coordinate pharmacy refill.',
                 },
                 {
                   cat: 'weekly_digest',
-                  label: '📊 Send Weekly Family Care Digest',
-                  subject: `📊 Weekly Family Care Digest: ${elderName} (${pct}% Adherence)`,
+                  icon: AnalyticsUpIcon,
+                  label: 'Send Weekly Family Care Digest',
+                  subject: `Weekly Family Care Digest: ${elderName} (${pct}% Adherence)`,
                   preview:
                     '6-day adherence summary, resting BP 124/78 mmHg, and upcoming cardiology visit brief.',
                 },
                 {
                   cat: 'elder_sos',
-                  label: '🚨 Send Priority Care SOS Test',
-                  subject: `🚨 PRIORITY CARE ALERT: ${elderName} Requested Check-In`,
+                  icon: MailSend01Icon,
+                  label: 'Send Priority Care SOS Test',
+                  subject: `PRIORITY CARE ALERT: ${elderName} Requested Check-In`,
                   preview: 'Immediate callback or check-in requested from Elder Companion.',
                 },
               ].map((trig) => (
@@ -1093,20 +1159,26 @@ export function CaretakerClinicalView({
                       category: trig.cat,
                       subject: trig.subject,
                       preview: trig.preview,
-                      customRecipient,
+                      customRecipient: customRecipient || undefined,
                     })
                   }
-                  className="rounded-xl border border-black/15 bg-[#F6F5F1] px-3.5 py-2.5 text-left text-xs font-bold text-[#14171A] hover:bg-[#EFECE6]"
+                  className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-left text-xs font-bold text-[#f5f5f5] transition hover:border-zinc-700 hover:bg-zinc-800"
                 >
-                  {trig.label}
+                  <HugeiconsIcon
+                    icon={trig.icon}
+                    size={15}
+                    strokeWidth={2}
+                    className="shrink-0 text-[#a78bfa]"
+                  />
+                  <span>{trig.label}</span>
                 </button>
               ))}
             </div>
           </section>
 
           {/* Dispatched Emails Outbox Log (React Bits AnimatedList) */}
-          <section className="rounded-2xl border border-black/10 bg-white p-6">
-            <h3 className="text-base font-bold text-[#14171A]">
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6">
+            <h3 className="text-base font-bold text-[#f5f5f5]">
               Dispatched Email Outbox &amp; Delivery Audit ({emails.length})
             </h3>
             <div className="mt-3">
@@ -1119,25 +1191,25 @@ export function CaretakerClinicalView({
                   <div
                     className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5 text-xs transition-all ${
                       isSelected
-                        ? 'border-[#0F524B] bg-[#0F524B]/5 shadow-xs'
-                        : 'border-black/10 bg-[#F6F5F1]'
+                        ? 'border-[#5227FF] bg-[#5227FF]/15 shadow-xs'
+                        : 'border-zinc-800 bg-zinc-900'
                     }`}
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="font-bold text-[#14171A]">{em.subject}</div>
-                      <div className="text-[#57606A]">
+                      <div className="font-bold text-[#f5f5f5]">{em.subject}</div>
+                      <div className="text-zinc-400">
                         To: {em.recipients} • {em.sentAt}
                       </div>
-                      <div className="mt-0.5 text-[#57606A]">{em.preview}</div>
+                      <div className="mt-0.5 text-zinc-400">{em.preview}</div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="rounded bg-[#0E6B50]/15 px-2.5 py-1 font-bold text-[#0E6B50]">
+                      <span className="rounded border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-1 font-bold text-[#c4b5fd]">
                         {em.status}
                       </span>
                       <button
                         type="button"
                         onClick={() => setPreviewEmail(em)}
-                        className="rounded-lg border border-black/15 bg-white px-3 py-1.5 font-bold"
+                        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-1.5 font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
                       >
                         Preview HTML
                       </button>
@@ -1155,18 +1227,18 @@ export function CaretakerClinicalView({
           ========================================================= */}
       {editingMed && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-[#14171A]">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-[#f5f5f5] shadow-2xl">
+            <h3 className="text-xl font-bold text-[#f5f5f5]">
               {editingMed.isEdit ? `Edit ${editingMed.med.name}` : 'Add New Medication'}
             </h3>
             <div className="mt-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold">Medicine Name</label>
+                  <label className="block text-xs font-bold text-zinc-200">Medicine Name</label>
                   <input
                     type="text"
                     value={editingMed.med.name}
@@ -1176,11 +1248,11 @@ export function CaretakerClinicalView({
                         med: { ...editingMed.med, name: e.target.value },
                       })
                     }
-                    className="mt-1 w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold">Dosage</label>
+                  <label className="block text-xs font-bold text-zinc-200">Dosage</label>
                   <input
                     type="text"
                     value={editingMed.med.dosage}
@@ -1190,23 +1262,28 @@ export function CaretakerClinicalView({
                         med: { ...editingMed.med, dosage: e.target.value },
                       })
                     }
-                    className="mt-1 w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold">
+                  <label className="text-xs font-bold text-zinc-200">
                     For what purpose is the patient taking this medicine?
                   </label>
                   <button
                     type="button"
                     disabled={askingAiPurpose}
                     onClick={askAiPurposeForModal}
-                    className="text-xs font-bold text-[#0F524B] underline"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#a78bfa] underline hover:text-[#c4b5fd]"
                   >
-                    {askingAiPurpose ? 'Asking AI...' : '✨ Ask AI Purpose'}
+                    <HugeiconsIcon
+                      icon={askingAiPurpose ? Clock01Icon : SparklesIcon}
+                      size={12}
+                      strokeWidth={2}
+                    />
+                    {askingAiPurpose ? 'Asking AI...' : 'Ask AI Purpose'}
                   </button>
                 </div>
                 <input
@@ -1219,13 +1296,13 @@ export function CaretakerClinicalView({
                     })
                   }
                   placeholder="e.g., Controls blood pressure and protects heart health"
-                  className="mt-1 w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                  className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold">Schedule Type</label>
+                  <label className="block text-xs font-bold text-zinc-200">Schedule Type</label>
                   <select
                     value={editingMed.med.scheduleType}
                     onChange={(e) =>
@@ -1237,7 +1314,7 @@ export function CaretakerClinicalView({
                         },
                       })
                     }
-                    className="mt-1 w-full rounded-xl border border-black/15 bg-white px-2.5 py-2 text-xs"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-2.5 py-2 text-xs text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                   >
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
@@ -1245,7 +1322,7 @@ export function CaretakerClinicalView({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold">Time (24h)</label>
+                  <label className="block text-xs font-bold text-zinc-200">Time (24h)</label>
                   <input
                     type="time"
                     value={editingMed.med.time === 'As Needed' ? '14:00' : editingMed.med.time}
@@ -1255,11 +1332,11 @@ export function CaretakerClinicalView({
                         med: { ...editingMed.med, time: e.target.value },
                       })
                     }
-                    className="mt-1 w-full rounded-xl border border-black/15 px-2.5 py-2 text-xs"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-2.5 py-2 text-xs text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold">Stock Count</label>
+                  <label className="block text-xs font-bold text-zinc-200">Stock Count</label>
                   <input
                     type="number"
                     value={editingMed.med.stock}
@@ -1269,14 +1346,14 @@ export function CaretakerClinicalView({
                         med: { ...editingMed.med, stock: Number(e.target.value) || 0 },
                       })
                     }
-                    className="mt-1 w-full rounded-xl border border-black/15 px-2.5 py-2 text-xs"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-2.5 py-2 text-xs text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold">Meal Timing</label>
+                  <label className="block text-xs font-bold text-zinc-200">Meal Timing</label>
                   <input
                     type="text"
                     value={editingMed.med.mealTiming}
@@ -1286,11 +1363,11 @@ export function CaretakerClinicalView({
                         med: { ...editingMed.med, mealTiming: e.target.value },
                       })
                     }
-                    className="mt-1 w-full rounded-xl border border-black/15 px-2.5 py-2 text-xs"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-2.5 py-2 text-xs text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold">Pill Color</label>
+                  <label className="block text-xs font-bold text-zinc-200">Pill Color</label>
                   <select
                     value={editingMed.med.colorName}
                     onChange={(e) =>
@@ -1299,7 +1376,7 @@ export function CaretakerClinicalView({
                         med: { ...editingMed.med, colorName: e.target.value },
                       })
                     }
-                    className="mt-1 w-full rounded-xl border border-black/15 bg-white px-2.5 py-2 text-xs"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-2.5 py-2 text-xs text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                   >
                     <option value="White">White</option>
                     <option value="Sky Blue">Sky Blue</option>
@@ -1309,7 +1386,7 @@ export function CaretakerClinicalView({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold">Pill Shape</label>
+                  <label className="block text-xs font-bold text-zinc-200">Pill Shape</label>
                   <select
                     value={editingMed.med.shape}
                     onChange={(e) =>
@@ -1318,7 +1395,7 @@ export function CaretakerClinicalView({
                         med: { ...editingMed.med, shape: e.target.value as PillShape },
                       })
                     }
-                    className="mt-1 w-full rounded-xl border border-black/15 bg-white px-2.5 py-2 text-xs"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-2.5 py-2 text-xs text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                   >
                     <option value="round">Round</option>
                     <option value="oval">Oval</option>
@@ -1333,7 +1410,7 @@ export function CaretakerClinicalView({
               <button
                 type="button"
                 onClick={() => setEditingMed(null)}
-                className="rounded-xl border border-black/15 px-4 py-2 text-xs font-bold"
+                className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
               >
                 Cancel
               </button>
@@ -1344,7 +1421,7 @@ export function CaretakerClinicalView({
                   onAddOrEditMed(editingMed.med, editingMed.isEdit);
                   setEditingMed(null);
                 }}
-                className="rounded-xl bg-[#0F524B] px-5 py-2 text-xs font-bold text-white"
+                className="rounded-xl bg-[#5227FF] px-5 py-2 text-xs font-bold text-white transition hover:bg-[#421cd9]"
               >
                 {editingMed.isEdit ? 'Save Changes' : 'Add to Schedule'}
               </button>
@@ -1358,18 +1435,18 @@ export function CaretakerClinicalView({
           ========================================================= */}
       {showRxScanner && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
-            <span className="rounded bg-[#0F524B]/10 px-2.5 py-0.5 text-xs font-bold text-[#0F524B]">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-[#f5f5f5] shadow-2xl">
+            <span className="rounded border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-0.5 text-xs font-bold text-[#c4b5fd]">
               Google Gemma 4 (gemma-4-31b-it) + Gemini 3 Flash
             </span>
-            <h3 className="mt-1 text-xl font-bold text-[#14171A]">
+            <h3 className="mt-1 text-xl font-bold text-[#f5f5f5]">
               AI Prescription &amp; Pill Bottle Scanner
             </h3>
-            <p className="mt-1 text-xs text-[#57606A]">
+            <p className="mt-1 text-xs text-zinc-400">
               Paste any prescription line below (or select a sample) to dynamically extract
               the drug, dosage, purpose, and meal rule.
             </p>
@@ -1384,7 +1461,7 @@ export function CaretakerClinicalView({
                   key={idx}
                   type="button"
                   onClick={() => setRxInputText(sample)}
-                  className="rounded-lg border border-black/10 bg-[#F6F5F1] px-2.5 py-1 text-[11px] font-semibold hover:bg-[#EFECE6]"
+                  className="rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-[11px] font-semibold text-zinc-300 transition hover:bg-zinc-800"
                 >
                   Sample {idx + 1}: {sample.slice(0, 26)}...
                 </button>
@@ -1395,33 +1472,39 @@ export function CaretakerClinicalView({
               rows={3}
               value={rxInputText}
               onChange={(e) => setRxInputText(e.target.value)}
-              className="mt-3 w-full rounded-xl border border-black/15 p-3 text-xs"
+              className="mt-3 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-xs text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
             />
 
             <button
               type="button"
               disabled={rxScanning}
               onClick={handleRunRxScan}
-              className="mt-3 w-full rounded-xl bg-[#0F524B] py-2.5 text-xs font-bold text-white disabled:opacity-50"
+              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#5227FF] py-2.5 text-xs font-bold text-white transition hover:bg-[#421cd9] disabled:opacity-50"
             >
+              <HugeiconsIcon
+                icon={rxScanning ? Clock01Icon : SparklesIcon}
+                size={14}
+                strokeWidth={2}
+              />
               {rxScanning
-                ? '⏳ Extracting with Gemma 4 AI...'
-                : '✨ Extract Medication & Purpose with AI'}
+                ? 'Extracting with Gemma 4 AI...'
+                : 'Extract Medication & Purpose with AI'}
             </button>
 
             {rxExtractedDraft && (
-              <div className="mt-4 rounded-xl border border-[#0E6B50]/30 bg-[#0E6B50]/10 p-4 text-xs">
-                <div className="font-bold text-[#0E6B50]">
-                  ✓ Extracted via {rxExtractedDraft.providerUsed}
+              <div className="mt-4 rounded-xl border border-[#5227FF]/40 bg-[#5227FF]/15 p-4 text-xs text-zinc-200">
+                <div className="inline-flex items-center gap-1 font-bold text-[#c4b5fd]">
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} size={14} strokeWidth={2} />
+                  Extracted via {rxExtractedDraft.providerUsed}
                 </div>
-                <div className="mt-1 text-sm font-bold text-[#14171A]">
+                <div className="mt-1 text-sm font-bold text-[#f5f5f5]">
                   {rxExtractedDraft.med.name} ({rxExtractedDraft.med.dosage})
                 </div>
                 <div className="mt-0.5">
-                  <strong>Purpose:</strong> {rxExtractedDraft.med.purpose}
+                  <strong className="text-[#f5f5f5]">Purpose:</strong> {rxExtractedDraft.med.purpose}
                 </div>
                 <div className="mt-0.5">
-                  <strong>Schedule:</strong> {rxExtractedDraft.med.time} •{' '}
+                  <strong className="text-[#f5f5f5]">Schedule:</strong> {rxExtractedDraft.med.time} •{' '}
                   {rxExtractedDraft.med.mealTiming}
                 </div>
                 <button
@@ -1431,9 +1514,10 @@ export function CaretakerClinicalView({
                     setRxExtractedDraft(null);
                     setShowRxScanner(false);
                   }}
-                  className="mt-3 w-full rounded-lg bg-[#14171A] py-2 text-xs font-bold text-white"
+                  className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#5227FF] py-2 text-xs font-bold text-white transition hover:bg-[#421cd9]"
                 >
-                  ✓ Confirm &amp; Import to Active Schedule
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} size={14} strokeWidth={2} />
+                  Confirm &amp; Import to Active Schedule
                 </button>
               </div>
             )}
@@ -1441,7 +1525,7 @@ export function CaretakerClinicalView({
             <button
               type="button"
               onClick={() => setShowRxScanner(false)}
-              className="mt-3 w-full py-1.5 text-xs font-bold text-[#57606A]"
+              className="mt-3 w-full py-1.5 text-xs font-bold text-zinc-400 hover:text-zinc-200"
             >
               Close
             </button>
@@ -1454,12 +1538,12 @@ export function CaretakerClinicalView({
           ========================================================= */}
       {showAddAppt && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-[#14171A]">
+          <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-[#f5f5f5] shadow-2xl">
+            <h3 className="text-xl font-bold text-[#f5f5f5]">
               Schedule Doctor Appointment
             </h3>
             <div className="mt-4 space-y-3">
@@ -1468,42 +1552,42 @@ export function CaretakerClinicalView({
                 value={newApptDoc}
                 onChange={(e) => setNewApptDoc(e.target.value)}
                 placeholder="Doctor Name (e.g., Dr. Arvind Patel)"
-                className="w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
               />
               <input
                 type="text"
                 value={newApptSpec}
                 onChange={(e) => setNewApptSpec(e.target.value)}
                 placeholder="Specialty (e.g., Ophthalmology)"
-                className="w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
               />
               <input
                 type="text"
                 value={newApptClinic}
                 onChange={(e) => setNewApptClinic(e.target.value)}
                 placeholder="Clinic & Address (e.g., LV Prasad Eye Institute, Hyderabad)"
-                className="w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
               />
               <input
                 type="text"
                 value={newApptDt}
                 onChange={(e) => setNewApptDt(e.target.value)}
                 placeholder="Date & Time Label"
-                className="w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
               />
               <input
                 type="text"
                 value={newApptPrep}
                 onChange={(e) => setNewApptPrep(e.target.value)}
                 placeholder="Preparation Checklist Item"
-                className="w-full rounded-xl border border-black/15 px-3 py-2 text-xs"
+                className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
               />
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowAddAppt(false)}
-                className="rounded-xl border border-black/15 px-4 py-2 text-xs font-bold"
+                className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
               >
                 Cancel
               </button>
@@ -1529,7 +1613,7 @@ export function CaretakerClinicalView({
                   });
                   setShowAddAppt(false);
                 }}
-                className="rounded-xl bg-[#0F524B] px-5 py-2 text-xs font-bold text-white"
+                className="rounded-xl bg-[#5227FF] px-5 py-2 text-xs font-bold text-white transition hover:bg-[#421cd9]"
               >
                 Save Appointment
               </button>
@@ -1543,25 +1627,25 @@ export function CaretakerClinicalView({
           ========================================================= */}
       {outcomeModalAppt && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-[#14171A]">
+          <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950 p-6 text-[#f5f5f5] shadow-2xl">
+            <h3 className="text-lg font-bold text-[#f5f5f5]">
               Log Post-Visit Outcome — {outcomeModalAppt.doctorName}
             </h3>
             <textarea
               rows={3}
               value={outcomeInput}
               onChange={(e) => setOutcomeInput(e.target.value)}
-              className="mt-3 w-full rounded-xl border border-black/15 p-3 text-xs"
+              className="mt-3 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-3 text-xs text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
             />
             <div className="mt-4 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setOutcomeModalAppt(null)}
-                className="rounded-xl border border-black/15 px-4 py-2 text-xs font-bold"
+                className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
               >
                 Cancel
               </button>
@@ -1571,7 +1655,7 @@ export function CaretakerClinicalView({
                   onSavePostVisitOutcome(outcomeModalAppt.id, outcomeInput.trim());
                   setOutcomeModalAppt(null);
                 }}
-                className="rounded-xl bg-[#0F524B] px-5 py-2 text-xs font-bold text-white"
+                className="rounded-xl bg-[#5227FF] px-5 py-2 text-xs font-bold text-white transition hover:bg-[#421cd9]"
               >
                 Save Outcome to Card &amp; Audit Log
               </button>
@@ -1585,25 +1669,25 @@ export function CaretakerClinicalView({
           ========================================================= */}
       {previewEmail && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
-            <div className="bg-[#0F524B] p-5 text-white">
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 text-[#f5f5f5] shadow-2xl">
+            <div className="bg-[#5227FF] p-5 text-white">
               <div className="text-[11px] font-bold uppercase tracking-wider opacity-85">
                 KindredCare AI • Care Circle KC-2026
               </div>
               <h3 className="mt-1 text-lg font-bold">{previewEmail.subject}</h3>
             </div>
-            <div className="p-6 text-xs space-y-2.5">
+            <div className="space-y-2.5 p-6 text-xs text-zinc-300">
               <div>
-                <strong>Recipients:</strong> {previewEmail.recipients}
+                <strong className="text-[#f5f5f5]">Recipients:</strong> {previewEmail.recipients}
               </div>
               <div>
-                <strong>Delivery Status:</strong> {previewEmail.status} ({previewEmail.sentAt})
+                <strong className="text-[#f5f5f5]">Delivery Status:</strong> {previewEmail.status} ({previewEmail.sentAt})
               </div>
-              <div className="rounded-xl bg-[#F6F5F1] p-4 text-sm text-[#14171A]">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 text-sm text-[#f5f5f5]">
                 {previewEmail.preview}
               </div>
               {previewEmail.previewUrl && (
@@ -1611,15 +1695,15 @@ export function CaretakerClinicalView({
                   href={previewEmail.previewUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block font-bold text-[#0F524B] underline"
+                  className="inline-block font-bold text-[#a78bfa] underline hover:text-[#c4b5fd]"
                 >
-                  Open Live SMTP Message Preview URL ↗
+                  Open Live SMTP Message Preview URL
                 </a>
               )}
               <button
                 type="button"
                 onClick={() => setPreviewEmail(null)}
-                className="mt-4 w-full rounded-xl bg-[#14171A] py-2.5 font-bold text-white"
+                className="mt-4 w-full rounded-xl border border-zinc-700 bg-zinc-800 py-2.5 font-bold text-[#f5f5f5] transition hover:bg-zinc-700"
               >
                 Close Preview
               </button>

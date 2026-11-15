@@ -1,6 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  Delete02Icon,
+  FileUploadIcon,
+  PlusSignIcon,
+  SparklesIcon,
+} from '@hugeicons/core-free-icons';
 import { KindredCareLogo, PillBadgeSvg } from './KindredCareBrand';
 import CodeSlots from './CodeSlots';
 import type { PillShape } from '@/types/domain';
@@ -54,7 +65,7 @@ export interface OnboardingFormData {
 }
 
 const SAMPLE_DISCHARGE_SUMMARY_TEXT = `APOLLO SENIOR HEART & WELLNESS CENTRE — GERIATRIC DISCHARGE SUMMARY
-Patient Name: Smt. Kamala Devi | Age: 74 Years | Blood Group: O+
+Patient Name: Primary Care Patient | Age: 74 Years | Blood Group: O+
 Known Allergies: Penicillin, Sulfa drugs
 Diagnoses: Type 2 Diabetes Mellitus, Essential Hypertension, Primary Hypothyroidism
 Primary Consultant: Dr. Rajesh Sharma, MD (Geriatric Cardiology) | Emergency Contact: +91 98400 11223
@@ -217,7 +228,7 @@ export function OnboardingWizard({
             'Confirm Caretaker & Family email alert addresses',
           ],
         });
-        onToast('✨ AI scanned medical summary & auto-filled health profile + medications!');
+        onToast('AI scanned medical summary & auto-filled health profile + medications.');
       }
     } catch {
       onToast('Auto-filled using clinical parser.');
@@ -254,7 +265,7 @@ export function OnboardingWizard({
               : m
           ),
         }));
-        onToast(`✨ AI filled purpose for ${name}`);
+        onToast(`AI filled purpose for ${name}`);
       }
     } finally {
       setAskingPurposeMedId(null);
@@ -284,7 +295,7 @@ export function OnboardingWizard({
           purpose: data.purpose,
           mealTiming: data.mealTiming || prev.mealTiming,
         }));
-        onToast(`✨ AI identified purpose for ${newMed.name}`);
+        onToast(`AI identified purpose for ${newMed.name}`);
       }
     } finally {
       setAskingNewMedPurpose(false);
@@ -327,7 +338,7 @@ export function OnboardingWizard({
       shape: 'round',
       stock: 30,
     });
-    onToast(`✓ Added ${created.name} to onboarding schedule.`);
+    onToast(`Added ${created.name} to onboarding schedule.`);
   }
 
   async function handleFinishOnboarding() {
@@ -340,24 +351,25 @@ export function OnboardingWizard({
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F5F1] px-4 py-8 text-[#14171A]">
+    <div className="min-h-screen bg-black px-4 py-8 text-[#f5f5f5]">
       <div className="mx-auto max-w-5xl">
         {/* Top Bar */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-black/10 bg-white px-6 py-4 shadow-sm">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-950 px-6 py-4 shadow-2xl">
           <KindredCareLogo
             size={42}
             subtitle="First-Time Care Circle Setup & AI Health Onboarding"
           />
           <div className="flex items-center gap-3">
-            <span className="hidden rounded-full bg-[#EFECE6] px-3 py-1 text-xs font-semibold text-[#57606A] sm:inline-block">
+            <span className="hidden rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1 text-xs font-semibold text-zinc-400 sm:inline-block">
               Step {step} of 4
             </span>
             <button
               type="button"
               onClick={onSkipToDemo}
-              className="rounded-xl border border-black/15 bg-[#F6F5F1] px-4 py-2 text-xs font-bold text-[#14171A] transition hover:bg-[#EFECE6]"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-zinc-700 hover:bg-zinc-800"
             >
-              Already Registered? Sign In →
+              Already Registered? Sign In
+              <HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -376,16 +388,16 @@ export function OnboardingWizard({
               onClick={() => setStep(s.n as 1 | 2 | 3 | 4)}
               className={`rounded-xl border p-3 text-left transition ${
                 step === s.n
-                  ? 'border-[#0F524B] bg-[#0F524B] text-white shadow-sm'
+                  ? 'border-[#5227FF] bg-[#5227FF] text-white shadow-lg shadow-[#5227FF]/20'
                   : step > s.n
-                    ? 'border-[#0E6B50]/30 bg-white text-[#14171A]'
-                    : 'border-black/10 bg-white/70 text-[#57606A]'
+                    ? 'border-[#5227FF]/40 bg-zinc-900 text-[#f5f5f5] hover:border-[#5227FF]/60'
+                    : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
               }`}
             >
               <div className="text-xs font-bold">{s.title}</div>
               <div
                 className={`mt-0.5 text-[11px] ${
-                  step === s.n ? 'text-white/80' : 'text-[#57606A]'
+                  step === s.n ? 'text-white/80' : 'text-zinc-500'
                 }`}
               >
                 {s.sub}
@@ -395,56 +407,56 @@ export function OnboardingWizard({
         </div>
 
         {/* Main Card */}
-        <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl sm:p-8">
           {/* =========================================================
               STEP 1: HOW IT WORKS + AI PDF / DOCUMENT AUTO-FILL
               ========================================================= */}
           {step === 1 && (
             <div className="space-y-6">
               <div>
-                <span className="inline-block rounded-md bg-[#0F524B]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                <span className="inline-block rounded-md border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                   Step 1 of 4 • Welcome &amp; Smart AI Auto-Fill
                 </span>
-                <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+                <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#f5f5f5] sm:text-3xl">
                   Built so an elder never needs to be Einstein.
                 </h1>
-                <p className="mt-1.5 text-sm text-[#57606A]">
+                <p className="mt-1.5 text-sm text-zinc-400">
                   KindredCare connects your care circle across{' '}
-                  <strong>three strictly separated role workspaces</strong> so each person
+                  <strong className="text-[#f5f5f5]">three strictly separated role workspaces</strong> so each person
                   signs in with their Name &amp; PIN and sees only what is built for them:
                 </p>
               </div>
 
               {/* 3 Role Education Cards */}
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4">
-                  <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-4">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                     1. Elder Companion
                   </div>
-                  <h3 className="mt-1 text-base font-bold">Calm 3-Button Companion</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[#57606A]">
+                  <h3 className="mt-1 text-base font-bold text-[#f5f5f5]">Calm 3-Button Companion</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-400">
                     Zero charts, zero admin sidebars, zero medical jargon. Just giant
                     pill visuals, voice read-aloud in 5 languages, meal check-in, and
                     privacy switches.
                   </p>
                 </div>
-                <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4">
-                  <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-4">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                     2. Caretaker Station
                   </div>
-                  <h3 className="mt-1 text-base font-bold">Clinical Care Station</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[#57606A]">
+                  <h3 className="mt-1 text-base font-bold text-[#f5f5f5]">Clinical Care Station</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-400">
                     Full medication add/edit, AI prescription scanner, drug-interaction
                     &amp; meal-timing guard, vitals logger, shift handoff, and AI doctor
                     brief.
                   </p>
                 </div>
-                <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4">
-                  <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-4">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                     3. Family Hub
                   </div>
-                  <h3 className="mt-1 text-base font-bold">Peace-of-Mind Hub</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-[#57606A]">
+                  <h3 className="mt-1 text-base font-bold text-[#f5f5f5]">Peace-of-Mind Hub</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-400">
                     7-day adherence calendar, pharmacy refill helper, Google
                     Calendar/Maps clinic links, and proactive email alerts—respecting the
                     Elder’s privacy locks.
@@ -453,17 +465,18 @@ export function OnboardingWizard({
               </div>
 
               {/* AI PDF / Medical Document Scanner Box */}
-              <div className="rounded-2xl border-2 border-dashed border-[#0F524B]/35 bg-[#0F524B]/[0.03] p-5 sm:p-6">
+              <div className="rounded-2xl border-2 border-dashed border-[#5227FF]/45 bg-[#5227FF]/[0.06] p-5 sm:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="max-w-xl">
-                    <span className="inline-flex items-center gap-1.5 rounded-md bg-[#0F524B] px-2.5 py-1 text-xs font-bold text-white">
-                      ✨ Google Gemma 4 (Adaption Labs) + Gemini 3 Flash
+                    <span className="inline-flex items-center gap-1.5 rounded-md bg-[#5227FF] px-2.5 py-1 text-xs font-bold text-white">
+                      <HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={2} />
+                      Google Gemma 4 (Adaption Labs) + Gemini 3 Flash
                     </span>
-                    <h2 className="mt-2 text-lg font-bold">
+                    <h2 className="mt-2 text-lg font-bold text-[#f5f5f5]">
                       Have a Hospital Discharge PDF, Medical Summary, or Prescription?
                     </h2>
-                    <p className="mt-1 text-xs text-[#57606A]">
-                      Upload your `.pdf` or medical text below. The AI will scan it,
+                    <p className="mt-1 text-xs text-zinc-400">
+                      Upload your <code className="rounded bg-zinc-900 px-1 py-0.5 text-zinc-300">.pdf</code> or medical text below. The AI will scan it,
                       auto-fill the patient’s health conditions, allergies, daily routine,
                       and medications (with their purpose), and highlight any remaining
                       fields for you to complete manually.
@@ -471,8 +484,9 @@ export function OnboardingWizard({
                   </div>
 
                   <div className="flex flex-wrap gap-2.5">
-                    <label className="cursor-pointer rounded-xl bg-[#0F524B] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#0A3C36]">
-                      📄 Upload Health PDF / Summary
+                    <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#5227FF] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#421cd9]">
+                      <HugeiconsIcon icon={FileUploadIcon} size={15} strokeWidth={2} />
+                      Upload Health PDF / Summary
                       <input
                         type="file"
                         accept=".pdf,.txt,image/*"
@@ -487,18 +501,23 @@ export function OnboardingWizard({
                         setRawDocText(SAMPLE_DISCHARGE_SUMMARY_TEXT);
                         runAiDocumentAutofill(SAMPLE_DISCHARGE_SUMMARY_TEXT);
                       }}
-                      className="rounded-xl border border-[#0F524B]/30 bg-white px-4 py-2.5 text-xs font-bold text-[#0F524B] transition hover:bg-[#0F524B]/5 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#5227FF]/40 bg-zinc-900 px-4 py-2.5 text-xs font-bold text-[#c4b5fd] transition hover:bg-[#5227FF]/15 disabled:opacity-50"
                     >
+                      <HugeiconsIcon
+                        icon={scanningDoc ? Clock01Icon : SparklesIcon}
+                        size={15}
+                        strokeWidth={2}
+                      />
                       {scanningDoc
-                        ? '⏳ Scanning with Gemma 4 AI...'
-                        : '✨ Scan Sample Hospital Discharge PDF'}
+                        ? 'Scanning with Gemma 4 AI...'
+                        : 'Scan Sample Hospital Discharge PDF'}
                     </button>
                   </div>
                 </div>
 
                 {/* Optional Paste Box */}
                 <div className="mt-4">
-                  <label className="block text-xs font-semibold text-[#57606A]">
+                  <label className="block text-xs font-semibold text-zinc-400">
                     Or paste discharge summary / prescription text to auto-fill:
                   </label>
                   <div className="mt-1.5 flex flex-col gap-2 sm:flex-row">
@@ -507,13 +526,13 @@ export function OnboardingWizard({
                       value={rawDocText}
                       onChange={(e) => setRawDocText(e.target.value)}
                       placeholder="Paste hospital discharge notes, diagnosis list, or medicines here..."
-                      className="flex-1 rounded-xl border border-black/15 bg-white px-3.5 py-2 text-xs"
+                      className="flex-1 rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                     <button
                       type="button"
                       disabled={scanningDoc || !rawDocText.trim()}
                       onClick={() => runAiDocumentAutofill(rawDocText)}
-                      className="shrink-0 rounded-xl bg-[#14171A] px-4 py-2 text-xs font-bold text-white disabled:opacity-40"
+                      className="shrink-0 rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-700 disabled:opacity-40"
                     >
                       Extract &amp; Auto-Fill
                     </button>
@@ -521,17 +540,18 @@ export function OnboardingWizard({
                 </div>
 
                 {aiScanBanner && (
-                  <div className="mt-4 rounded-xl border border-[#0E6B50]/30 bg-[#0E6B50]/10 p-4">
+                  <div className="mt-4 rounded-xl border border-[#5227FF]/40 bg-[#5227FF]/15 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-[#0E6B50]">
-                        ✓ Auto-Filled via {aiScanBanner.providerUsed}
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#c4b5fd]">
+                        <HugeiconsIcon icon={CheckmarkCircle02Icon} size={15} strokeWidth={2} />
+                        Auto-Filled via {aiScanBanner.providerUsed}
                       </span>
-                      <span className="text-[11px] font-semibold text-[#0E6B50]">
+                      <span className="text-[11px] font-semibold text-[#c4b5fd]">
                         Profile + {form.medications.length} Medications Extracted
                       </span>
                     </div>
-                    <div className="mt-2 text-xs text-[#14171A]">
-                      <strong>Remaining items for you to verify manually in Steps 2–4:</strong>{' '}
+                    <div className="mt-2 text-xs text-zinc-200">
+                      <strong className="text-[#f5f5f5]">Remaining items for you to verify manually in Steps 2–4:</strong>{' '}
                       {aiScanBanner.missingFields.join(' • ')}
                     </div>
                   </div>
@@ -542,9 +562,10 @@ export function OnboardingWizard({
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="rounded-xl bg-[#0F524B] px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#0A3C36]"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#5227FF] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#421cd9]"
                 >
-                  Continue to Step 2: Review Health &amp; Routine →
+                  Continue to Step 2: Review Health &amp; Routine
+                  <HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2} />
                 </button>
               </div>
             </div>
@@ -557,34 +578,35 @@ export function OnboardingWizard({
             <div className="space-y-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <span className="inline-block rounded-md bg-[#0F524B]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                  <span className="inline-block rounded-md border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                     Step 2 of 4 • Elder Health Profile &amp; Daily Routine
                   </span>
-                  <h2 className="mt-1 text-2xl font-bold">
+                  <h2 className="mt-1 text-2xl font-bold text-[#f5f5f5]">
                     Patient Health Details &amp; Meal Schedule
                   </h2>
                 </div>
                 {aiScanBanner && (
-                  <span className="rounded-full bg-[#0E6B50]/10 px-3 py-1 text-xs font-bold text-[#0E6B50]">
-                    ✨ AI Auto-Filled — Edit Any Field
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#5227FF]/35 bg-[#5227FF]/15 px-3 py-1 text-xs font-bold text-[#c4b5fd]">
+                    <HugeiconsIcon icon={SparklesIcon} size={14} strokeWidth={2} />
+                    AI Auto-Filled — Edit Any Field
                   </span>
                 )}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="block text-xs font-bold text-[#14171A]">
+                  <label className="block text-xs font-bold text-zinc-200">
                     1. Elder Full Name
                   </label>
                   <input
                     type="text"
                     value={form.elderName}
                     onChange={(e) => setForm({ ...form, elderName: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#14171A]">
+                  <label className="block text-xs font-bold text-zinc-200">
                     2. Age (Years)
                   </label>
                   <input
@@ -593,17 +615,17 @@ export function OnboardingWizard({
                     onChange={(e) =>
                       setForm({ ...form, elderAge: Number(e.target.value) || 74 })
                     }
-                    className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#14171A]">
+                  <label className="block text-xs font-bold text-zinc-200">
                     3. Blood Group
                   </label>
                   <select
                     value={form.bloodGroup}
                     onChange={(e) => setForm({ ...form, bloodGroup: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3.5 py-2.5 text-sm"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                   >
                     {['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map((bg) => (
                       <option key={bg} value={bg}>
@@ -616,7 +638,7 @@ export function OnboardingWizard({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold text-[#14171A]">
+                  <label className="block text-xs font-bold text-zinc-200">
                     4. Known Drug or Food Allergies (Critical for Safety Guard)
                   </label>
                   <input
@@ -624,11 +646,11 @@ export function OnboardingWizard({
                     value={form.allergiesText}
                     onChange={(e) => setForm({ ...form, allergiesText: e.target.value })}
                     placeholder="e.g., Penicillin, Sulfa drugs, Peanuts"
-                    className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#14171A]">
+                  <label className="block text-xs font-bold text-zinc-200">
                     5. Primary Health Conditions Being Managed
                   </label>
                   <input
@@ -636,38 +658,38 @@ export function OnboardingWizard({
                     value={form.conditionsText}
                     onChange={(e) => setForm({ ...form, conditionsText: e.target.value })}
                     placeholder="e.g., Type 2 Diabetes, Hypertension, Hypothyroidism"
-                    className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold text-[#14171A]">
+                  <label className="block text-xs font-bold text-zinc-200">
                     6. Primary Doctor &amp; Hospital
                   </label>
                   <input
                     type="text"
                     value={form.primaryDoctor}
                     onChange={(e) => setForm({ ...form, primaryDoctor: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm"
+                    className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#14171A]">
+                  <label className="block text-xs font-bold text-zinc-200">
                     7. Emergency Contact Phone (Manual Verification Recommended)
                   </label>
                   <input
                     type="text"
                     value={form.emergencyPhone}
                     onChange={(e) => setForm({ ...form, emergencyPhone: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-amber-500/60 bg-amber-50/30 px-3.5 py-2.5 text-sm"
+                    className="mt-1 w-full rounded-xl border border-amber-500/50 bg-amber-500/10 px-3.5 py-2.5 text-sm text-[#f5f5f5] focus:border-amber-400 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#14171A]">
+                <label className="block text-xs font-bold text-zinc-200">
                   8. Mobility, Vision &amp; Comfort Notes (For Caretaker &amp; UI Adaptation)
                 </label>
                 <input
@@ -677,13 +699,13 @@ export function OnboardingWizard({
                     setForm({ ...form, mobilityAndComfortNotes: e.target.value })
                   }
                   placeholder="e.g., Wears reading glasses, prefers voice read-aloud, stand up slowly after evening BP pill"
-                  className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm"
+                  className="mt-1 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3.5 py-2.5 text-sm text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                 />
               </div>
 
               {/* Daily Routine Times */}
-              <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4">
-                <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-4">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                   9. Daily Wake, Meal &amp; Bedtime Routine (Powers Active Meal-Timing Safety Prompts)
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -695,7 +717,7 @@ export function OnboardingWizard({
                     { key: 'bedTime', label: 'Bedtime' },
                   ].map((item) => (
                     <div key={item.key}>
-                      <label className="block text-[11px] font-semibold text-[#57606A]">
+                      <label className="block text-[11px] font-semibold text-zinc-400">
                         {item.label}
                       </label>
                       <input
@@ -704,7 +726,7 @@ export function OnboardingWizard({
                         onChange={(e) =>
                           setForm({ ...form, [item.key]: e.target.value })
                         }
-                        className="mt-1 w-full rounded-lg border border-black/15 bg-white px-2.5 py-1.5 text-xs font-semibold"
+                        className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-1.5 text-xs font-semibold text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                       />
                     </div>
                   ))}
@@ -715,16 +737,18 @@ export function OnboardingWizard({
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="rounded-xl border border-black/15 px-5 py-2.5 text-sm font-bold"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-2.5 text-sm font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
                 >
-                  ← Back
+                  <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
+                  Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="rounded-xl bg-[#0F524B] px-6 py-2.5 text-sm font-bold text-white"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#5227FF] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[#421cd9]"
                 >
-                  Continue to Step 3: Medicines &amp; Purpose →
+                  Continue to Step 3: Medicines &amp; Purpose
+                  <HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2} />
                 </button>
               </div>
             </div>
@@ -736,16 +760,16 @@ export function OnboardingWizard({
           {step === 3 && (
             <div className="space-y-6">
               <div>
-                <span className="inline-block rounded-md bg-[#0F524B]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                <span className="inline-block rounded-md border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                   Step 3 of 4 • Medications &amp; Purpose
                 </span>
-                <h2 className="mt-1 text-2xl font-bold">
+                <h2 className="mt-1 text-2xl font-bold text-[#f5f5f5]">
                   What medicines are taken, and for what purpose?
                 </h2>
-                <p className="mt-1 text-xs text-[#57606A]">
-                  Every medicine shows its <strong>plain-language purpose</strong> so the
+                <p className="mt-1 text-xs text-zinc-400">
+                  Every medicine shows its <strong className="text-[#f5f5f5]">plain-language purpose</strong> so the
                   elder always knows <em>why</em> they are taking a pill. Click{' '}
-                  <strong>✨ Ask AI Purpose</strong> if you only know the tablet name.
+                  <strong className="text-[#c4b5fd]">Ask AI Purpose</strong> if you only know the tablet name.
                 </p>
               </div>
 
@@ -754,7 +778,7 @@ export function OnboardingWizard({
                 {form.medications.map((m) => (
                   <div
                     key={m.id}
-                    className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4"
+                    className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
@@ -765,21 +789,22 @@ export function OnboardingWizard({
                           size={44}
                         />
                         <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-[#14171A]">{m.name}</span>
-                            <span className="rounded bg-black/5 px-2 py-0.5 text-xs font-semibold">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-bold text-[#f5f5f5]">{m.name}</span>
+                            <span className="rounded border border-zinc-700 bg-zinc-800 px-2 py-0.5 text-xs font-semibold text-zinc-200">
                               {m.dosage}
                             </span>
                             {m.aiFilled && (
-                              <span className="rounded bg-[#0E6B50]/15 px-2 py-0.5 text-[10px] font-bold text-[#0E6B50]">
-                                ✨ AI Auto-Filled
+                              <span className="inline-flex items-center gap-1 rounded border border-[#5227FF]/35 bg-[#5227FF]/15 px-2 py-0.5 text-[10px] font-bold text-[#c4b5fd]">
+                                <HugeiconsIcon icon={SparklesIcon} size={11} strokeWidth={2} />
+                                AI Auto-Filled
                               </span>
                             )}
                           </div>
-                          <div className="mt-0.5 text-xs text-[#57606A]">
-                            Time: <strong>{m.time}</strong> • Meal Rule:{' '}
-                            <strong>{m.mealTiming}</strong> • Stock:{' '}
-                            <strong>{m.stock} pills</strong>
+                          <div className="mt-0.5 text-xs text-zinc-400">
+                            Time: <strong className="text-zinc-200">{m.time}</strong> • Meal Rule:{' '}
+                            <strong className="text-zinc-200">{m.mealTiming}</strong> • Stock:{' '}
+                            <strong className="text-zinc-200">{m.stock} pills</strong>
                           </div>
                         </div>
                       </div>
@@ -792,8 +817,9 @@ export function OnboardingWizard({
                             medications: prev.medications.filter((x) => x.id !== m.id),
                           }))
                         }
-                        className="rounded-lg border border-red-200 bg-white px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
+                        className="inline-flex items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400 transition hover:bg-red-500/20"
                       >
+                        <HugeiconsIcon icon={Delete02Icon} size={13} strokeWidth={2} />
                         Remove
                       </button>
                     </div>
@@ -801,8 +827,8 @@ export function OnboardingWizard({
                     {/* Editable Purpose Field + Ask AI Button */}
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                       <div className="flex-1">
-                        <label className="block text-[11px] font-bold text-[#57606A]">
-                          For what purpose is {form.elderName.split(' ')[0]} taking {m.name}?
+                        <label className="block text-[11px] font-bold text-zinc-400">
+                          For what purpose is {form.elderName.split(' ')[0] || 'the patient'} taking {m.name}?
                         </label>
                         <input
                           type="text"
@@ -817,11 +843,11 @@ export function OnboardingWizard({
                               ),
                             }))
                           }
-                          className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-1.5 text-xs"
+                          className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
                         />
                       </div>
                       <div className="w-28">
-                        <label className="block text-[11px] font-bold text-[#57606A]">
+                        <label className="block text-[11px] font-bold text-zinc-400">
                           Pills in Stock
                         </label>
                         <input
@@ -837,16 +863,21 @@ export function OnboardingWizard({
                               ),
                             }))
                           }
-                          className="mt-1 w-full rounded-lg border border-black/15 bg-white px-2.5 py-1.5 text-xs font-bold"
+                          className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-1.5 text-xs font-bold text-[#f5f5f5] focus:border-[#5227FF] focus:outline-none"
                         />
                       </div>
                       <button
                         type="button"
                         disabled={askingPurposeMedId === m.id}
                         onClick={() => askAiForPurpose(m.id, m.name, m.dosage)}
-                        className="mt-4 shrink-0 rounded-lg border border-[#0F524B]/30 bg-white px-3 py-1.5 text-xs font-bold text-[#0F524B] hover:bg-[#0F524B]/5"
+                        className="mt-4 inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[#5227FF]/40 bg-zinc-950 px-3 py-1.5 text-xs font-bold text-[#c4b5fd] transition hover:bg-[#5227FF]/15"
                       >
-                        {askingPurposeMedId === m.id ? '⏳ Asking AI...' : '✨ Ask AI Purpose'}
+                        <HugeiconsIcon
+                          icon={askingPurposeMedId === m.id ? Clock01Icon : SparklesIcon}
+                          size={13}
+                          strokeWidth={2}
+                        />
+                        {askingPurposeMedId === m.id ? 'Asking AI...' : 'Ask AI Purpose'}
                       </button>
                     </div>
                   </div>
@@ -854,13 +885,14 @@ export function OnboardingWizard({
               </div>
 
               {/* Add Another Medicine Manual Builder */}
-              <div className="rounded-xl border border-black/15 bg-white p-4">
-                <h3 className="text-sm font-bold">
-                  + Add Another Medicine Manually
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+                <h3 className="flex items-center gap-1.5 text-sm font-bold text-[#f5f5f5]">
+                  <HugeiconsIcon icon={PlusSignIcon} size={15} strokeWidth={2} />
+                  Add Another Medicine Manually
                 </h3>
                 <div className="mt-3 grid gap-3 sm:grid-cols-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#57606A]">
+                    <label className="block text-xs font-semibold text-zinc-400">
                       Medicine Name
                     </label>
                     <input
@@ -868,11 +900,11 @@ export function OnboardingWizard({
                       value={newMed.name}
                       onChange={(e) => setNewMed({ ...newMed, name: e.target.value })}
                       placeholder="e.g., Ecosprin 75"
-                      className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#57606A]">
+                    <label className="block text-xs font-semibold text-zinc-400">
                       Dosage
                     </label>
                     <input
@@ -880,22 +912,22 @@ export function OnboardingWizard({
                       value={newMed.dosage}
                       onChange={(e) => setNewMed({ ...newMed, dosage: e.target.value })}
                       placeholder="e.g., 75 mg (1 tab)"
-                      className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#57606A]">
+                    <label className="block text-xs font-semibold text-zinc-400">
                       Time (24h)
                     </label>
                     <input
                       type="time"
                       value={newMed.time}
                       onChange={(e) => setNewMed({ ...newMed, time: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#57606A]">
+                    <label className="block text-xs font-semibold text-zinc-400">
                       Meal Rule
                     </label>
                     <input
@@ -905,14 +937,14 @@ export function OnboardingWizard({
                         setNewMed({ ...newMed, mealTiming: e.target.value })
                       }
                       placeholder="e.g., After lunch"
-                      className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
                   <div className="flex-1">
-                    <label className="block text-xs font-semibold text-[#57606A]">
+                    <label className="block text-xs font-semibold text-zinc-400">
                       For what purpose are you taking this medication?
                     </label>
                     <input
@@ -920,23 +952,29 @@ export function OnboardingWizard({
                       value={newMed.purpose}
                       onChange={(e) => setNewMed({ ...newMed, purpose: e.target.value })}
                       placeholder="e.g., Protects heart health & blood circulation (or click Ask AI Purpose)"
-                      className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                   <button
                     type="button"
                     disabled={askingNewMedPurpose}
                     onClick={askAiForNewMedPurpose}
-                    className="rounded-lg border border-[#0F524B]/30 bg-[#0F524B]/5 px-3.5 py-2 text-xs font-bold text-[#0F524B]"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#5227FF]/40 bg-[#5227FF]/15 px-3.5 py-2 text-xs font-bold text-[#c4b5fd] transition hover:bg-[#5227FF]/25"
                   >
-                    {askingNewMedPurpose ? '⏳ Asking AI...' : '✨ Ask AI Purpose'}
+                    <HugeiconsIcon
+                      icon={askingNewMedPurpose ? Clock01Icon : SparklesIcon}
+                      size={13}
+                      strokeWidth={2}
+                    />
+                    {askingNewMedPurpose ? 'Asking AI...' : 'Ask AI Purpose'}
                   </button>
                   <button
                     type="button"
                     onClick={handleAddNewMedToOnboarding}
-                    className="rounded-lg bg-[#14171A] px-4 py-2 text-xs font-bold text-white"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-xs font-bold text-[#f5f5f5] transition hover:bg-zinc-700"
                   >
-                    + Add Medicine to List
+                    <HugeiconsIcon icon={PlusSignIcon} size={13} strokeWidth={2} />
+                    Add Medicine to List
                   </button>
                 </div>
               </div>
@@ -945,16 +983,18 @@ export function OnboardingWizard({
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="rounded-xl border border-black/15 px-5 py-2.5 text-sm font-bold"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-2.5 text-sm font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
                 >
-                  ← Back
+                  <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
+                  Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(4)}
-                  className="rounded-xl bg-[#0F524B] px-6 py-2.5 text-sm font-bold text-white"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#5227FF] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[#421cd9]"
                 >
-                  Continue to Step 4: Caretaker, Family &amp; Autonomy →
+                  Continue to Step 4: Caretaker, Family &amp; Autonomy
+                  <HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2} />
                 </button>
               </div>
             </div>
@@ -966,52 +1006,52 @@ export function OnboardingWizard({
           {step === 4 && (
             <div className="space-y-6">
               <div>
-                <span className="inline-block rounded-md bg-[#0F524B]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                <span className="inline-block rounded-md border border-[#5227FF]/30 bg-[#5227FF]/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                   Step 4 of 4 • Care Circle Team, Passcodes &amp; Autonomy
                 </span>
-                <h2 className="mt-1 text-2xl font-bold">
+                <h2 className="mt-1 text-2xl font-bold text-[#f5f5f5]">
                   Who is updating and checking daily progress?
                 </h2>
-                <p className="mt-1 text-xs text-[#57606A]">
+                <p className="mt-1 text-xs text-zinc-400">
                   Configure the Caretaker and Family members who support{' '}
-                  <strong>{form.elderName}</strong>, plus her personal privacy and voice
+                  <strong className="text-[#f5f5f5]">{form.elderName}</strong>, plus their personal privacy and voice
                   preferences.
                 </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* Caretaker Setup */}
-                <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4 space-y-3">
+                <div className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-900/90 p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                       Primary Caretaker (Updates Daily Progress)
                     </span>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Caretaker Full Name</label>
+                    <label className="block text-xs font-semibold text-zinc-200">Caretaker Full Name</label>
                     <input
                       type="text"
-                      placeholder="e.g., Nurse Ananya Rao"
+                      placeholder="e.g., Caregiver Full Name"
                       value={form.caretakerName}
                       onChange={(e) =>
                         setForm({ ...form, caretakerName: e.target.value })
                       }
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Caretaker Security PIN (4 digits)</label>
-                    <div className="mt-1.5 flex items-center justify-center rounded-xl bg-[#18181b] py-2.5 px-3">
+                    <label className="block text-xs font-semibold text-zinc-200">Caretaker Security PIN (4 digits)</label>
+                    <div className="mt-1.5 flex items-center justify-center rounded-xl border border-zinc-800 bg-black px-3 py-2.5">
                       <CodeSlots
                         length={4}
                         value={form.caretakerPin.replace(/\D/g, '').slice(0, 4)}
                         onChange={(code: string) =>
                           setForm({ ...form, caretakerPin: code })
                         }
-                        accentColor="#f5f5f5"
+                        accentColor="#5227FF"
                         inkColor="#f5f5f5"
-                        slotColor="#27272a"
-                        digitColor="#18181b"
+                        slotColor="#18181b"
+                        digitColor="#f5f5f5"
                         dangerColor="#ff3b30"
                         slotSize={38}
                         gap={8}
@@ -1021,7 +1061,7 @@ export function OnboardingWizard({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Shift &amp; Duties</label>
+                    <label className="block text-xs font-semibold text-zinc-200">Shift &amp; Duties</label>
                     <input
                       type="text"
                       placeholder="e.g., Morning & Evening Clinical Shift"
@@ -1029,11 +1069,11 @@ export function OnboardingWizard({
                       onChange={(e) =>
                         setForm({ ...form, caretakerShift: e.target.value })
                       }
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Caretaker Alert Email</label>
+                    <label className="block text-xs font-semibold text-zinc-200">Caretaker Alert Email</label>
                     <input
                       type="email"
                       placeholder="caretaker@example.com"
@@ -1041,41 +1081,41 @@ export function OnboardingWizard({
                       onChange={(e) =>
                         setForm({ ...form, caretakerEmail: e.target.value })
                       }
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 {/* Family Setup */}
-                <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4 space-y-3">
+                <div className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-900/90 p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                       Family Coordinator (Checks Progress &amp; Refills)
                     </span>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Family Member Full Name</label>
+                    <label className="block text-xs font-semibold text-zinc-200">Family Member Full Name</label>
                     <input
                       type="text"
-                      placeholder="e.g., Geetesh Gollapalli"
+                      placeholder="e.g., Family Coordinator Name"
                       value={form.familyName}
                       onChange={(e) => setForm({ ...form, familyName: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Family Security PIN (4 digits)</label>
-                    <div className="mt-1.5 flex items-center justify-center rounded-xl bg-[#18181b] py-2.5 px-3">
+                    <label className="block text-xs font-semibold text-zinc-200">Family Security PIN (4 digits)</label>
+                    <div className="mt-1.5 flex items-center justify-center rounded-xl border border-zinc-800 bg-black px-3 py-2.5">
                       <CodeSlots
                         length={4}
                         value={form.familyPin.replace(/\D/g, '').slice(0, 4)}
                         onChange={(code: string) =>
                           setForm({ ...form, familyPin: code })
                         }
-                        accentColor="#f5f5f5"
+                        accentColor="#5227FF"
                         inkColor="#f5f5f5"
-                        slotColor="#27272a"
-                        digitColor="#18181b"
+                        slotColor="#18181b"
+                        digitColor="#f5f5f5"
                         dangerColor="#ff3b30"
                         slotSize={38}
                         gap={8}
@@ -1085,19 +1125,19 @@ export function OnboardingWizard({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Relation &amp; Role</label>
+                    <label className="block text-xs font-semibold text-zinc-200">Relation &amp; Role</label>
                     <input
                       type="text"
-                      placeholder="e.g., Son / Grandson & Family Coordinator"
+                      placeholder="e.g., Primary Family Coordinator"
                       value={form.familyRelation}
                       onChange={(e) =>
                         setForm({ ...form, familyRelation: e.target.value })
                       }
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">
+                    <label className="block text-xs font-semibold text-zinc-200">
                       Proactive Email Alert Recipient
                     </label>
                     <input
@@ -1105,33 +1145,33 @@ export function OnboardingWizard({
                       placeholder="family@example.com"
                       value={form.familyEmail}
                       onChange={(e) => setForm({ ...form, familyEmail: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-[#f5f5f5] placeholder:text-zinc-500 focus:border-[#5227FF] focus:outline-none"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Elder Autonomy Defaults */}
-              <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4">
-                <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/90 p-4">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#a78bfa]">
                   Elder Personal Security PIN, Autonomy &amp; Voice Defaults (“My Care, My Choice”)
                 </div>
                 <div className="mt-3 grid gap-4 sm:grid-cols-3">
                   <div>
-                    <label className="block text-xs font-semibold">
+                    <label className="block text-xs font-semibold text-zinc-200">
                       Elder Security PIN (4 digits)
                     </label>
-                    <div className="mt-1.5 flex items-center justify-center rounded-xl bg-[#18181b] py-2.5 px-3">
+                    <div className="mt-1.5 flex items-center justify-center rounded-xl border border-zinc-800 bg-black px-3 py-2.5">
                       <CodeSlots
                         length={4}
                         value={form.elderPin.replace(/\D/g, '').slice(0, 4)}
                         onChange={(code: string) =>
                           setForm({ ...form, elderPin: code })
                         }
-                        accentColor="#f5f5f5"
+                        accentColor="#5227FF"
                         inkColor="#f5f5f5"
-                        slotColor="#27272a"
-                        digitColor="#18181b"
+                        slotColor="#18181b"
+                        digitColor="#f5f5f5"
                         dangerColor="#ff3b30"
                         slotSize={38}
                         gap={8}
@@ -1141,7 +1181,7 @@ export function OnboardingWizard({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">
+                    <label className="block text-xs font-semibold text-zinc-200">
                       Elder Preferred Language &amp; Voice Readout
                     </label>
                     <select
@@ -1152,7 +1192,7 @@ export function OnboardingWizard({
                           language: e.target.value as OnboardingFormData['language'],
                         })
                       }
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs font-semibold"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs font-semibold text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                     >
                       <option value="English">English</option>
                       <option value="Hindi">हिंदी (Hindi)</option>
@@ -1162,7 +1202,7 @@ export function OnboardingWizard({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">
+                    <label className="block text-xs font-semibold text-zinc-200">
                       Missed-Dose Grace Window (Before Emailing Family)
                     </label>
                     <select
@@ -1173,7 +1213,7 @@ export function OnboardingWizard({
                           graceMinutes: Number(e.target.value) as 15 | 30 | 60,
                         })
                       }
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs font-semibold"
+                      className="mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs font-semibold text-[#f5f5f5] [color-scheme:dark] focus:border-[#5227FF] focus:outline-none"
                     >
                       <option value={15}>15 Minutes Grace Window</option>
                       <option value={30}>30 Minutes Grace Window (Recommended)</option>
@@ -1182,7 +1222,7 @@ export function OnboardingWizard({
                   </div>
                 </div>
 
-                <div className="mt-3 flex flex-wrap gap-6">
+                <div className="mt-3 flex flex-wrap gap-6 text-zinc-200">
                   <label className="flex items-center gap-2 text-xs font-semibold">
                     <input
                       type="checkbox"
@@ -1190,7 +1230,7 @@ export function OnboardingWizard({
                       onChange={(e) =>
                         setForm({ ...form, allowFamilyEdits: e.target.checked })
                       }
-                      className="h-4 w-4 accent-[#0F524B]"
+                      className="h-4 w-4 accent-[#5227FF]"
                     />
                     Allow Family Members to Edit Medicine Times (Unchecked = Only Elder &amp; Caretaker)
                   </label>
@@ -1201,7 +1241,7 @@ export function OnboardingWizard({
                       onChange={(e) =>
                         setForm({ ...form, shareVitals: e.target.checked })
                       }
-                      className="h-4 w-4 accent-[#0F524B]"
+                      className="h-4 w-4 accent-[#5227FF]"
                     />
                     Share Daily BP &amp; Sugar Numbers with Extended Family
                   </label>
@@ -1212,19 +1252,25 @@ export function OnboardingWizard({
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="rounded-xl border border-black/15 px-5 py-2.5 text-sm font-bold"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-2.5 text-sm font-bold text-[#f5f5f5] transition hover:bg-zinc-800"
                 >
-                  ← Back
+                  <HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2} />
+                  Back
                 </button>
                 <button
                   type="button"
                   disabled={saving}
                   onClick={handleFinishOnboarding}
-                  className="rounded-xl bg-[#0F524B] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#0A3C36] disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#5227FF] px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#421cd9] disabled:opacity-60"
                 >
+                  <HugeiconsIcon
+                    icon={saving ? Clock01Icon : CheckmarkCircle02Icon}
+                    size={16}
+                    strokeWidth={2}
+                  />
                   {saving
                     ? 'Saving Profile to Firebase & Cloud DB...'
-                    : '✓ Complete Registration & Proceed to Sign In'}
+                    : 'Complete Registration & Proceed to Sign In'}
                 </button>
               </div>
             </div>

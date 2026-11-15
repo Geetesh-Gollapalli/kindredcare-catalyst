@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --bg-canvas: #F6F5F1;
-  --surface: #FFFFFF;
-  --surface-subtle: #EFECE6;
-  --hairline: rgba(20, 24, 28, 0.10);
-  --hairline-strong: rgba(20, 24, 28, 0.18);
-  --text-primary: #14171A;
-  --text-muted: #57606A;
-  --accent: #0F524B;
-  --accent-hover: #0A3C36;
-  --accent-tint: rgba(15, 82, 75, 0.08);
-  --gold: #D97706;
+  --bg-canvas: #000000;
+  --surface: #09090b;
+  --surface-subtle: #18181b;
+  --hairline: rgba(255, 255, 255, 0.10);
+  --hairline-strong: rgba(255, 255, 255, 0.20);
+  --text-primary: #f5f5f5;
+  --text-muted: #a1a1aa;
+  --accent: #5227FF;
+  --accent-hover: #6d4aff;
+  --accent-tint: rgba(82, 39, 255, 0.14);
+  --gold: #f59e0b;
   --scale: 1;
 }
 
@@ -44,24 +44,24 @@ body.comfort-mode select {
 
 /* WCAG AAA High Contrast Mode */
 body.high-contrast {
-  --bg-canvas: #FFFFFF;
-  --surface: #FFFFFF;
-  --surface-subtle: #F3F4F6;
-  --hairline: #111827;
-  --hairline-strong: #000000;
-  --text-primary: #000000;
-  --text-muted: #111827;
-  --accent: #003D36;
+  --bg-canvas: #000000;
+  --surface: #000000;
+  --surface-subtle: #111114;
+  --hairline: #ffffff;
+  --hairline-strong: #ffffff;
+  --text-primary: #ffffff;
+  --text-muted: #e4e4e7;
+  --accent: #7c5cff;
 }
 
 body.high-contrast .hc-card {
   border-width: 2px !important;
-  border-color: #000000 !important;
+  border-color: #ffffff !important;
 }
 
 /* Accessible focus ring for keyboard navigation */
 *:focus-visible {
-  outline: 3px solid #0284C7 !important;
+  outline: 3px solid #5227FF !important;
   outline-offset: 2px !important;
 }
 
