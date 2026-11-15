@@ -4,12 +4,14 @@ import { canPerformAction } from '@/lib/security';
 import {
   DoseActionSchema,
   MedicationCreateSchema,
+  MedicationUpdateSchema,
 } from '@/lib/validation';
 import {
   addMedicationToStore,
   deleteMedicationFromStore,
   getCareCircleState,
   recordDoseActionInStore,
+  updateMedicationInStore,
 } from '@/services/store';
 
 export async function POST(req: NextRequest) {
@@ -101,6 +103,55 @@ export async function PUT(req: NextRequest) {
 
   return NextResponse.json({
     doseLog: log,
+    circle: getCareCircleState(),
+  });
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await getAuthenticatedSession(req);
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Passcode authentication required.' },
+      { status: 401 }
+    );
+  }
+
+  const circle = getCareCircleState();
+  const body = await req.json();
+  const parsed = MedicationUpdateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Invalid medication update payload.', details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  // Allow Family to refill stock (+30), while schedule edits respect Elder Autonomy
+  const isRefillOnly =
+    typeof parsed.data.refillDelta === 'number' &&
+    !parsed.data.name &&
+    !parsed.data.dosage &&
+    !parsed.data.scheduledTime;
+
+  if (!isRefillOnly) {
+    const permission = canPerformAction(
+      session.role,
+      'manage_schedule',
+      circle.autonomySettings
+    );
+    if (!permission.allowed) {
+      return NextResponse.json({ error: permission.reason }, { status: 403 });
+    }
+  }
+
+  const { id, refillDelta, ...patch } = parsed.data;
+  const updated = await updateMedicationInStore({ id, patch, refillDelta });
+  if (!updated) {
+    return NextResponse.json({ error: 'Medication not found.' }, { status: 404 });
+  }
+
+  return NextResponse.json({
+    medication: updated,
     circle: getCareCircleState(),
   });
 }

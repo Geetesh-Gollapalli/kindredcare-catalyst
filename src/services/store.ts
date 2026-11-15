@@ -19,11 +19,13 @@ const DEFAULT_CIRCLE_CODE = 'KC-2026';
 
 // Pre-hashed role passcodes using cryptographic scrypt
 // Elder Easy-PIN: "1234"
-// Caretaker Passcode: "CARE2026"
-// Family Passcode: "FAMILY26"
+// Caretaker Passcode: "CARE2026" or keypad PIN "2026"
+// Family Passcode: "FAMILY26" or keypad PIN "8899"
 const elderHash = hashPasscode('1234', 'a1b2c3d4e5f60718293a4b5c6d7e8f90');
 const caretakerHash = hashPasscode('CARE2026', 'b2c3d4e5f60718293a4b5c6d7e8f90a1');
+const caretakerPinHash = hashPasscode('2026', 'd4e5f60718293a4b5c6d7e8f90a1b2c3');
 const familyHash = hashPasscode('FAMILY26', 'c3d4e5f60718293a4b5c6d7e8f90a1b2');
+const familyPinHash = hashPasscode('8899', 'e5f60718293a4b5c6d7e8f90a1b2c3d4');
 
 export const DEFAULT_PASSCODE_RECORDS: RolePasscodeRecord[] = [
   {
@@ -39,9 +41,21 @@ export const DEFAULT_PASSCODE_RECORDS: RolePasscodeRecord[] = [
     label: 'Ananya Rao (Primary Caretaker)',
   },
   {
+    role: 'caretaker',
+    salt: caretakerPinHash.salt,
+    hash: caretakerPinHash.hash,
+    label: 'Ananya Rao (Primary Caretaker)',
+  },
+  {
     role: 'family',
     salt: familyHash.salt,
     hash: familyHash.hash,
+    label: 'Geetesh Gollapalli (Family Circle)',
+  },
+  {
+    role: 'family',
+    salt: familyPinHash.salt,
+    hash: familyPinHash.hash,
     label: 'Geetesh Gollapalli (Family Circle)',
   },
 ];
@@ -458,6 +472,36 @@ export async function addMedicationToStore(
   return med;
 }
 
+export async function updateMedicationInStore(params: {
+  id: string;
+  patch: Partial<Medication>;
+  refillDelta?: number;
+}): Promise<Medication | null> {
+  let updated: Medication | null = null;
+  await updateCareCircleState((prev) => {
+    const nextMedications = prev.medications.map((m) => {
+      if (m.id !== params.id) return m;
+      const nextStock =
+        typeof params.refillDelta === 'number'
+          ? Math.max(0, m.stockCount + params.refillDelta)
+          : typeof params.patch.stockCount === 'number'
+            ? params.patch.stockCount
+            : m.stockCount;
+      updated = {
+        ...m,
+        ...params.patch,
+        stockCount: nextStock,
+      };
+      return updated;
+    });
+    return {
+      ...prev,
+      medications: nextMedications,
+    };
+  });
+  return updated;
+}
+
 export async function deleteMedicationFromStore(medicationId: string): Promise<boolean> {
   let removed = false;
   await updateCareCircleState((prev) => {
@@ -473,7 +517,7 @@ export async function deleteMedicationFromStore(medicationId: string): Promise<b
 
 export async function recordDoseActionInStore(params: {
   medicationId: string;
-  status: 'taken' | 'skipped' | 'snoozed';
+  status: 'taken' | 'skipped' | 'snoozed' | 'pending';
   role: CareRole;
   memberName: string;
   reason?: string;
@@ -512,8 +556,12 @@ export async function recordDoseActionInStore(params: {
     const prevWasTaken =
       existingLogIndex >= 0 && prev.doseLogs[existingLogIndex].status === 'taken';
 
-    const nextLogs = [...prev.doseLogs];
-    if (existingLogIndex >= 0) {
+    let nextLogs = [...prev.doseLogs];
+    if (params.status === 'pending') {
+      nextLogs = nextLogs.filter(
+        (l) => !(l.medicationId === med.id && l.dateKey === dateKey)
+      );
+    } else if (existingLogIndex >= 0) {
       nextLogs[existingLogIndex] = newLog;
     } else {
       nextLogs.unshift(newLog);
@@ -523,6 +571,9 @@ export async function recordDoseActionInStore(params: {
       if (m.id !== med.id) return m;
       if (params.status === 'taken' && !prevWasTaken) {
         return { ...m, stockCount: Math.max(0, m.stockCount - 1) };
+      }
+      if (params.status === 'pending' && prevWasTaken) {
+        return { ...m, stockCount: m.stockCount + 1 };
       }
       return m;
     });
@@ -535,6 +586,31 @@ export async function recordDoseActionInStore(params: {
   });
 
   return newLog;
+}
+
+export async function updateCareCircleProfileInStore(patch: {
+  elderName?: string;
+  elderAge?: number;
+  bloodGroup?: string;
+  allergies?: string[];
+  conditions?: string[];
+  primaryDoctor?: string;
+  emergencyPhone?: string;
+  autonomySettings?: Partial<ElderAutonomySettings>;
+}): Promise<CareCircleState> {
+  return updateCareCircleState((prev) => ({
+    ...prev,
+    elderName: patch.elderName?.trim() || prev.elderName,
+    elderAge: typeof patch.elderAge === 'number' ? patch.elderAge : prev.elderAge,
+    bloodGroup: patch.bloodGroup?.trim() || prev.bloodGroup,
+    allergies: Array.isArray(patch.allergies) ? patch.allergies : prev.allergies,
+    conditions: Array.isArray(patch.conditions) ? patch.conditions : prev.conditions,
+    primaryDoctor: patch.primaryDoctor?.trim() || prev.primaryDoctor,
+    emergencyPhone: patch.emergencyPhone?.trim() || prev.emergencyPhone,
+    autonomySettings: patch.autonomySettings
+      ? { ...prev.autonomySettings, ...patch.autonomySettings }
+      : prev.autonomySettings,
+  }));
 }
 
 export async function addAppointmentToStore(

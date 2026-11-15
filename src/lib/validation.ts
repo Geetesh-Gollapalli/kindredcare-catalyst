@@ -51,12 +51,37 @@ export const MedicationCreateSchema = z.object({
 
 export const DoseActionSchema = z.object({
   medicationId: z.string().trim().min(1),
-  status: z.enum(['taken', 'skipped', 'snoozed']),
+  status: z.enum(['taken', 'skipped', 'snoozed', 'pending']),
   reason: z.string().trim().max(200).optional(),
   dateKey: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional(),
+});
+
+export const MedicationUpdateSchema = z.object({
+  id: z.string().trim().min(1),
+  name: z.string().trim().min(2).max(100).optional(),
+  genericName: z.string().trim().max(100).optional(),
+  dosage: z.string().trim().min(1).max(50).optional(),
+  purpose: z.string().trim().min(2).max(200).optional(),
+  plainExplanation: z.string().trim().max(400).optional(),
+  slot: z.enum(['morning', 'afternoon', 'evening', 'bedtime']).optional(),
+  scheduledTime: z.string().max(20).optional(),
+  mealTiming: z
+    .enum(['before_meal', 'with_meal', 'after_meal', 'empty_stomach', 'anytime'])
+    .optional(),
+  appearance: z
+    .object({
+      color: z.string().trim().min(2).max(30),
+      shape: z.enum(['round', 'oval', 'capsule', 'diamond']),
+      imprint: z.string().trim().max(20).optional(),
+    })
+    .optional(),
+  prescribedBy: z.string().trim().max(80).optional(),
+  stockCount: z.number().int().min(0).max(1000).optional(),
+  refillDelta: z.number().int().min(-100).max(500).optional(),
+  instructions: z.string().trim().max(300).optional(),
 });
 
 export const AppointmentCreateSchema = z.object({

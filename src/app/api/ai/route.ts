@@ -1,33 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuthenticatedSession } from '@/lib/api-auth';
 import { getCareCircleState } from '@/services/store';
 import {
   analyzeDrugInteractionsWithAI,
   explainMedicationForElderWithAI,
+  explainMedicationPurposeWithAI,
+  extractOnboardingProfileWithAI,
   generateDoctorVisitBriefWithAI,
   scanPrescriptionWithAI,
 } from '@/services/ai-engine';
 
 export async function POST(req: NextRequest) {
-  const session = await getAuthenticatedSession(req);
-  if (!session) {
-    return NextResponse.json(
-      { error: 'Passcode authentication required.' },
-      { status: 401 }
-    );
-  }
-
   const body = (await req.json()) as {
-    action?: 'drug_safety' | 'scan_prescription' | 'doctor_brief' | 'explain_pill';
+    action?:
+      | 'drug_safety'
+      | 'scan_prescription'
+      | 'doctor_brief'
+      | 'explain_pill'
+      | 'onboarding_autofill'
+      | 'explain_purpose';
     prescriptionText?: string;
+    documentText?: string;
     imageBase64DataUrl?: string;
     medicationId?: string;
+    medicationName?: string;
+    dosage?: string;
     language?: string;
   };
 
   const circle = getCareCircleState();
 
   switch (body.action) {
+    case 'onboarding_autofill': {
+      const autofill = await extractOnboardingProfileWithAI({
+        documentText: body.documentText || body.prescriptionText,
+        imageBase64DataUrl: body.imageBase64DataUrl,
+      });
+      return NextResponse.json({ autofill });
+    }
+
+    case 'explain_purpose': {
+      const result = await explainMedicationPurposeWithAI({
+        name: body.medicationName || 'Medication',
+        dosage: body.dosage,
+      });
+      return NextResponse.json(result);
+    }
+
     case 'drug_safety': {
       const report = await analyzeDrugInteractionsWithAI(
         circle.medications,

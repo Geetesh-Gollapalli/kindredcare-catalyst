@@ -4,7 +4,11 @@ import { calculateAdherenceMetrics } from '@/lib/adherence';
 import { canPerformAction } from '@/lib/security';
 import { AutonomyUpdateSchema } from '@/lib/validation';
 import { isFirebaseCloudConfigured } from '@/services/firebase';
-import { getCareCircleState, updateAutonomyInStore } from '@/services/store';
+import {
+  getCareCircleState,
+  updateAutonomyInStore,
+  updateCareCircleProfileInStore,
+} from '@/services/store';
 
 export async function GET(req: NextRequest) {
   const session = await getAuthenticatedSession(req);
@@ -63,5 +67,32 @@ export async function PATCH(req: NextRequest) {
   return NextResponse.json({
     autonomySettings: updatedAutonomy,
     circle: getCareCircleState(),
+  });
+}
+
+export async function PUT(req: NextRequest) {
+  const body = (await req.json()) as {
+    elderName?: string;
+    elderAge?: number;
+    bloodGroup?: string;
+    allergies?: string[];
+    conditions?: string[];
+    primaryDoctor?: string;
+    emergencyPhone?: string;
+    autonomySettings?: Record<string, unknown>;
+  };
+
+  const updated = await updateCareCircleProfileInStore({
+    elderName: body.elderName,
+    elderAge: body.elderAge,
+    bloodGroup: body.bloodGroup,
+    allergies: body.allergies,
+    conditions: body.conditions,
+    primaryDoctor: body.primaryDoctor,
+    emergencyPhone: body.emergencyPhone,
+  });
+
+  return NextResponse.json({
+    circle: updated,
   });
 }

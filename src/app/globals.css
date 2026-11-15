@@ -3,38 +3,88 @@
 @tailwind utilities;
 
 :root {
-  --bg-canvas: #f8fafc;
-  --text-primary: #0f172a;
+  --bg-canvas: #F6F5F1;
+  --surface: #FFFFFF;
+  --surface-subtle: #EFECE6;
+  --hairline: rgba(20, 24, 28, 0.10);
+  --hairline-strong: rgba(20, 24, 28, 0.18);
+  --text-primary: #14171A;
+  --text-muted: #57606A;
+  --accent: #0F524B;
+  --accent-hover: #0A3C36;
+  --accent-tint: rgba(15, 82, 75, 0.08);
+  --gold: #D97706;
+  --scale: 1;
 }
 
 html {
   scroll-behavior: smooth;
+  font-size: calc(16px * var(--scale));
 }
 
 body {
   background-color: var(--bg-canvas);
   color: var(--text-primary);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Senior Comfort Mode: WCAG AAA high-visibility scaling */
-.senior-comfort-mode {
-  font-size: 112.5%;
-  line-height: 1.65;
+/* Senior Comfort Mode: Larger typography & 56px+ tactile buttons */
+body.comfort-mode {
+  --scale: 1.18;
 }
 
-.senior-comfort-mode button,
-.senior-comfort-mode a,
-.senior-comfort-mode input,
-.senior-comfort-mode select {
-  min-height: 52px;
+body.comfort-mode button,
+body.comfort-mode a,
+body.comfort-mode input,
+body.comfort-mode select {
+  min-height: 54px;
+}
+
+/* WCAG AAA High Contrast Mode */
+body.high-contrast {
+  --bg-canvas: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-subtle: #F3F4F6;
+  --hairline: #111827;
+  --hairline-strong: #000000;
+  --text-primary: #000000;
+  --text-muted: #111827;
+  --accent: #003D36;
+}
+
+body.high-contrast .hc-card {
+  border-width: 2px !important;
+  border-color: #000000 !important;
 }
 
 /* Accessible focus ring for keyboard navigation */
 *:focus-visible {
-  outline: 3px solid #0d9488 !important;
+  outline: 3px solid #0284C7 !important;
   outline-offset: 2px !important;
+}
+
+/* Clean Print Isolation: When printing a modal sheet or brief, hide app chrome */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  body.modal-open .app-workspace-shell {
+    display: none !important;
+  }
+  body.modal-open .modal-print-container {
+    position: static !important;
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
