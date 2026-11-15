@@ -1,0 +1,21 @@
+# ROADMAP.md — KindredCare AI Execution Phases
+
+- [x] **Phase 0: Repository & Specification Setup**
+  - Configure Git, `.gitignore` (<10MB guard), public GitHub repository (`kindredcare-catalyst`), and finalized `.gsd/SPEC.md`.
+- [x] **Phase 1: Core Foundation, Security & Google Services Layer**
+  - Next.js + TypeScript strict setup, Tailwind CSS, `Atkinson Hyperlegible` font.
+  - Cryptographic passcode engine (`scrypt` + `timingSafeEqual`), HMAC session tokens, RBAC, and rate limiting.
+  - Cloud Firestore integration (`firebase`) + hardened `firestore.rules` (via `firestore-rules-author`) + resilient local store sync.
+- [x] **Phase 2: Medication Engine, Care Circle & Proactive Email System**
+  - Medication schedule CRUD, adherence calculator, refill tracking, appointments, vitals, and shared care journal.
+  - Proactive Email Reminder & Escalation Service (`nodemailer` SMTP + idempotency + live outbox audit trail).
+  - Google Calendar & Google Maps integrations.
+- [x] **Phase 3: AI Innovations & Accessible Dual-Mode UI**
+  - Dual-provider AI service: Google Gemini (`@google/genai`) + Adaption Labs Google Gemma 4 (`gemma-4-31b-it`).
+  - Prescription Vision Scanner, Drug-Interaction Guard, Plain-Language Pill Explainer, Doctor Visit Brief Generator.
+  - Elder Sanctuary Mode ("My Day"), Voice Read-Aloud & Voice Check-in, Senior Comfort Mode, Elder Autonomy Controls, Caretaker Command Center.
+- [x] **Phase 4: Comprehensive Automated Test Suite & Quality Gate**
+  - Vitest unit & integration tests (Crypto/RBAC, Medication & Adherence Engine, Email Idempotency, API validation, `axe-core` WCAG accessibility tests).
+  - TypeScript `tsc --noEmit` verification.
+- [ ] **Phase 5: Production Build, GitHub Push & Live Deployment**
+  - Verify `npm run build`, push single branch `main` to `https://github.com/Geetesh-Gollapalli/kindredcare-catalyst`, verify repo size `< 10 MB`, and deploy live public URL.

@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-canvas: #f8fafc;
+  --text-primary: #0f172a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Senior Comfort Mode: WCAG AAA high-visibility scaling */
+.senior-comfort-mode {
+  font-size: 112.5%;
+  line-height: 1.65;
+}
+
+.senior-comfort-mode button,
+.senior-comfort-mode a,
+.senior-comfort-mode input,
+.senior-comfort-mode select {
+  min-height: 52px;
+}
+
+/* Accessible focus ring for keyboard navigation */
+*:focus-visible {
+  outline: 3px solid #0d9488 !important;
+  outline-offset: 2px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

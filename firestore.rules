@@ -1,0 +1,453 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model — KindredCare AI
+// ===============================================================
+//
+// This security rules file enforces strict Role-Based Access Control (RBAC),
+// circle membership isolation, and schema validation for the KindredCare AI
+// Elderly Care & Medication Management Platform.
+//
+// Collection: careCircles/{circleId}
+// Document ID: circleId (e.g., "kc-2026")
+// Fields:
+//   - elderName: string (required, 1..100 chars) - Full name of the elderly individual
+//   - circleCode: string (required, immutable, 3..32 chars) - Unique care circle code
+//   - autonomySettings: map (required, <= 10 keys) - Elder-controlled privacy & grace window settings
+//   - rolePasscodeHashes: map (optional, immutable on client update, keys: elder, caretaker, family)
+//   - updatedAt: timestamp or ISO-8601 string (required)
+//   - createdAt: timestamp or ISO-8601 string (optional, immutable)
+//
+// Subcollection: careCircles/{circleId}/medications/{medicationId}
+// Fields:
+//   - name: string (required, 1..120 chars)
+//   - dosage: string (required, 1..80 chars)
+//   - frequency: string (required, 1..80 chars)
+//   - times: list of strings (required, 1..12 items)
+//   - mealTiming: string (required, enum: 'Before Meal', 'With Meal', 'After Meal', 'Empty Stomach', 'Anytime')
+//   - stockCount: int (required, 0..10000)
+//   - prescribedBy: string (required, 1..120 chars)
+//   - circleId, form, color, shape, notes, lowStockThreshold, createdAt, updatedAt (optional, bounded)
+//
+// Subcollection: careCircles/{circleId}/doseLogs/{logId}
+// Fields:
+//   - medicationId: string (required, immutable, 1..100 chars)
+//   - scheduledTime: string (required, immutable, 1..60 chars)
+//   - status: string (required, enum: 'taken', 'skipped', 'snoozed', 'missed')
+//   - loggedByRole: string (required, enum: 'elder', 'caretaker', 'family', 'system')
+//   - reason: string (optional, 0..300 chars)
+//   - timestamp: timestamp or ISO-8601 string (required)
+//   - circleId: string (optional, immutable)
+//
+// Subcollection: careCircles/{circleId}/appointments/{appointmentId}
+// Fields:
+//   - doctorName: string (required, 1..120 chars)
+//   - specialty: string (required, 1..100 chars)
+//   - clinicAddress: string (required, 1..250 chars)
+//   - dateTime: timestamp or ISO-8601 string (required)
+//   - prepChecklist: list (required, 0..25 items)
+//   - status: string (required, enum: 'scheduled', 'completed', 'cancelled', 'rescheduled')
+//   - circleId, notes, mapsUrl, createdAt, updatedAt (optional, bounded)
+//
+// Subcollection: careCircles/{circleId}/vitals/{vitalId}
+// Fields:
+//   - type: string (required, immutable, enum: 'blood_pressure', 'blood_glucose', 'hydration', 'mood', 'heart_rate', 'weight', 'temperature')
+//   - value: string (1..50 chars) or number (0..10000) (required)
+//   - unit: string (required, 1..30 chars)
+//   - notes: string (optional, 0..500 chars)
+//   - recordedAt: timestamp or ISO-8601 string (required, immutable)
+//   - circleId, loggedByRole (optional, bounded)
+//
+// Subcollection: careCircles/{circleId}/emailReminders/{reminderId}
+// Fields:
+//   - idempotencyKey: string (required, immutable, 4..180 chars)
+//   - type: string (required, immutable, enum: 'upcoming_dose', 'missed_dose_escalation', 'appointment_reminder', 'low_refill_alert', 'elder_sos')
+//   - recipientEmail: string (required, immutable, valid email format)
+//   - status: string (required, enum: 'queued', 'sent', 'failed', 'skipped_duplicate')
+//   - sentAt: timestamp or ISO-8601 string (required)
+//   - circleId, subject, previewHtml, errorMessage (optional, bounded)
+//
+// Subcollection: careCircles/{circleId}/careNotes/{noteId}
+// Fields:
+//   - authorName: string (required, immutable, 1..80 chars)
+//   - role: string (required, immutable, enum: 'elder', 'caretaker', 'family')
+//   - message: string (required, 1..1000 chars)
+//   - createdAt: timestamp or ISO-8601 string (required, immutable)
+//   - circleId, authorUid (optional, immutable)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user owns the resource (for user-scoped documents)
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Verify UID hasn't been tampered with on create
+    function uidUnchanged() {
+      return !('authorUid' in request.resource.data) ||
+        request.resource.data.authorUid == request.auth.uid;
+    }
+
+    // Ensure UID field is not modified on update
+    function uidNotModified() {
+      return !('authorUid' in request.resource.data) ||
+        !('authorUid' in resource.data) ||
+        request.resource.data.authorUid == resource.data.authorUid;
+    }
+
+    // Verify the authenticated user belongs to the target Care Circle and holds a valid role
+    function isCircleMember(circleId) {
+      return isAuthenticated() &&
+        request.auth.token.circleId == circleId &&
+        request.auth.token.role in ['elder', 'caretaker', 'family'];
+    }
+
+    // Role-specific authorization checks derived strictly from trusted custom claims
+    function isElder(circleId) {
+      return isCircleMember(circleId) && request.auth.token.role == 'elder';
+    }
+
+    function isCaretaker(circleId) {
+      return isCircleMember(circleId) && request.auth.token.role == 'caretaker';
+    }
+
+    function isFamily(circleId) {
+      return isCircleMember(circleId) && request.auth.token.role == 'family';
+    }
+
+    // Validate required fields exist on incoming document
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Validate that the document contains only explicitly allowed fields
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Validate that immutable fields have not been modified during an update
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // Validate string length within min and max bounds
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    // Validate optional string (if present, must be string and within length bounds)
+    function isValidOptionalString(field, minLen, maxLen) {
+      return !(field in request.resource.data) ||
+        (request.resource.data[field] is string &&
+         request.resource.data[field].size() >= minLen &&
+         request.resource.data[field].size() <= maxLen);
+    }
+
+    // Validate list type and enforce maximum element count
+    function isValidList(listVal, maxSize) {
+      return listVal is list && listVal.size() <= maxSize;
+    }
+
+    // Validate email format and length bound
+    function isValidEmail(email) {
+      return email is string &&
+        email.size() >= 5 &&
+        email.size() <= 254 &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // Validate URL format and length bound
+    function isValidUrl(url) {
+      return url is string &&
+        url.size() <= 500 &&
+        (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    // Validate ISO 8601 date string format with strict length upper bound to prevent ReDoS/DoS
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.size() >= 10 &&
+        dateStr.size() <= 40 &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    // Accept either native Firestore timestamp or bounded ISO-8601 date string
+    function isValidTimestampOrDate(val) {
+      return val is timestamp || isValidDateString(val);
+    }
+
+    // Validate optional circleId matches the path parameter
+    function isScopedCircleId(data, circleId) {
+      return !('circleId' in data) || (data.circleId is string && data.circleId == circleId);
+    }
+
+    // ===============================================================
+    // Domain Validators (Called on BOTH create and update)
+    // ===============================================================
+
+    function isValidCareCircle(data) {
+      return hasRequiredFields(['elderName', 'circleCode', 'autonomySettings', 'updatedAt']) &&
+        hasOnlyAllowedFields(['elderName', 'circleCode', 'autonomySettings', 'rolePasscodeHashes', 'updatedAt', 'createdAt']) &&
+        validStringLength('elderName', 1, 100) &&
+        validStringLength('circleCode', 3, 32) &&
+        data.autonomySettings is map &&
+        data.autonomySettings.size() >= 1 &&
+        data.autonomySettings.size() <= 10 &&
+        (!('rolePasscodeHashes' in data) || (
+          data.rolePasscodeHashes is map &&
+          data.rolePasscodeHashes.keys().hasOnly(['elder', 'caretaker', 'family'])
+        )) &&
+        isValidTimestampOrDate(data.updatedAt) &&
+        (!('createdAt' in data) || isValidTimestampOrDate(data.createdAt));
+    }
+
+    function isValidMedication(data, circleId) {
+      return hasRequiredFields(['name', 'dosage', 'frequency', 'times', 'mealTiming', 'stockCount', 'prescribedBy']) &&
+        hasOnlyAllowedFields([
+          'name', 'dosage', 'frequency', 'times', 'mealTiming', 'stockCount', 'prescribedBy',
+          'circleId', 'form', 'color', 'shape', 'notes', 'lowStockThreshold', 'createdAt', 'updatedAt'
+        ]) &&
+        validStringLength('name', 1, 120) &&
+        validStringLength('dosage', 1, 80) &&
+        validStringLength('frequency', 1, 80) &&
+        isValidList(data.times, 12) &&
+        data.times.size() >= 1 &&
+        data.times[0] is string &&
+        data.times[0].size() >= 1 &&
+        data.times[0].size() <= 30 &&
+        data.mealTiming in ['Before Meal', 'With Meal', 'After Meal', 'Empty Stomach', 'Anytime'] &&
+        data.stockCount is int &&
+        data.stockCount >= 0 &&
+        data.stockCount <= 10000 &&
+        validStringLength('prescribedBy', 1, 120) &&
+        isScopedCircleId(data, circleId) &&
+        isValidOptionalString('form', 1, 50) &&
+        isValidOptionalString('color', 1, 50) &&
+        isValidOptionalString('shape', 1, 50) &&
+        isValidOptionalString('notes', 0, 500) &&
+        (!('lowStockThreshold' in data) || (data.lowStockThreshold is int && data.lowStockThreshold >= 0 && data.lowStockThreshold <= 365)) &&
+        (!('createdAt' in data) || isValidTimestampOrDate(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampOrDate(data.updatedAt));
+    }
+
+    function isValidDoseLog(data, circleId) {
+      return hasRequiredFields(['medicationId', 'scheduledTime', 'status', 'loggedByRole', 'timestamp']) &&
+        hasOnlyAllowedFields(['medicationId', 'scheduledTime', 'status', 'loggedByRole', 'reason', 'timestamp', 'circleId']) &&
+        validStringLength('medicationId', 1, 100) &&
+        validStringLength('scheduledTime', 1, 60) &&
+        data.status in ['taken', 'skipped', 'snoozed', 'missed'] &&
+        data.loggedByRole in ['elder', 'caretaker', 'family', 'system'] &&
+        data.loggedByRole == request.auth.token.role &&
+        isValidOptionalString('reason', 0, 300) &&
+        isValidTimestampOrDate(data.timestamp) &&
+        isScopedCircleId(data, circleId);
+    }
+
+    function isValidAppointment(data, circleId) {
+      return hasRequiredFields(['doctorName', 'specialty', 'clinicAddress', 'dateTime', 'prepChecklist', 'status']) &&
+        hasOnlyAllowedFields([
+          'doctorName', 'specialty', 'clinicAddress', 'dateTime', 'prepChecklist', 'status',
+          'circleId', 'notes', 'mapsUrl', 'createdAt', 'updatedAt'
+        ]) &&
+        validStringLength('doctorName', 1, 120) &&
+        validStringLength('specialty', 1, 100) &&
+        validStringLength('clinicAddress', 1, 250) &&
+        isValidTimestampOrDate(data.dateTime) &&
+        isValidList(data.prepChecklist, 25) &&
+        (data.prepChecklist.size() == 0 || (data.prepChecklist[0] is string && data.prepChecklist[0].size() <= 200)) &&
+        data.status in ['scheduled', 'completed', 'cancelled', 'rescheduled'] &&
+        isScopedCircleId(data, circleId) &&
+        isValidOptionalString('notes', 0, 500) &&
+        (!('mapsUrl' in data) || isValidUrl(data.mapsUrl)) &&
+        (!('createdAt' in data) || isValidTimestampOrDate(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampOrDate(data.updatedAt));
+    }
+
+    function isValidVital(data, circleId) {
+      return hasRequiredFields(['type', 'value', 'unit', 'recordedAt']) &&
+        hasOnlyAllowedFields(['type', 'value', 'unit', 'notes', 'recordedAt', 'circleId', 'loggedByRole']) &&
+        data.type in ['blood_pressure', 'blood_glucose', 'hydration', 'mood', 'heart_rate', 'weight', 'temperature'] &&
+        ((data.value is string && data.value.size() >= 1 && data.value.size() <= 50) ||
+         (data.value is number && data.value >= 0 && data.value <= 10000)) &&
+        validStringLength('unit', 1, 30) &&
+        isValidOptionalString('notes', 0, 500) &&
+        isValidTimestampOrDate(data.recordedAt) &&
+        isScopedCircleId(data, circleId) &&
+        (!('loggedByRole' in data) || data.loggedByRole == request.auth.token.role);
+    }
+
+    function isValidEmailReminder(data, circleId) {
+      return hasRequiredFields(['idempotencyKey', 'type', 'recipientEmail', 'status', 'sentAt']) &&
+        hasOnlyAllowedFields([
+          'idempotencyKey', 'type', 'recipientEmail', 'status', 'sentAt',
+          'circleId', 'subject', 'previewHtml', 'errorMessage'
+        ]) &&
+        validStringLength('idempotencyKey', 4, 180) &&
+        data.type in ['upcoming_dose', 'missed_dose_escalation', 'appointment_reminder', 'low_refill_alert', 'elder_sos'] &&
+        isValidEmail(data.recipientEmail) &&
+        data.status in ['queued', 'sent', 'failed', 'skipped_duplicate'] &&
+        isValidTimestampOrDate(data.sentAt) &&
+        isScopedCircleId(data, circleId) &&
+        isValidOptionalString('subject', 1, 200) &&
+        isValidOptionalString('previewHtml', 0, 15000) &&
+        isValidOptionalString('errorMessage', 0, 500);
+    }
+
+    function isValidCareNote(data, circleId) {
+      return hasRequiredFields(['authorName', 'role', 'message', 'createdAt']) &&
+        hasOnlyAllowedFields(['authorName', 'role', 'message', 'createdAt', 'circleId', 'authorUid']) &&
+        validStringLength('authorName', 1, 80) &&
+        data.role in ['elder', 'caretaker', 'family'] &&
+        data.role == request.auth.token.role &&
+        validStringLength('message', 1, 1000) &&
+        isValidTimestampOrDate(data.createdAt) &&
+        isScopedCircleId(data, circleId) &&
+        uidUnchanged();
+    }
+
+    // ===============================================================
+    // Collection Security Rules
+    // ===============================================================
+
+    match /careCircles/{circleId} {
+      // All authorized members of the care circle can read the profile
+      allow read: if isCircleMember(circleId);
+
+      // Initial care circle profile setup is permitted for elder or caretaker
+      allow create: if (isElder(circleId) || isCaretaker(circleId)) &&
+        isValidCareCircle(request.resource.data);
+
+      // Elder Autonomy Protection ("My Care, My Choice"):
+      // Only the elder (or caretaker during initial setup if autonomySettings was not yet present)
+      // may modify autonomySettings. Circle codes and passcode hashes are strictly immutable from clients.
+      allow update: if (isElder(circleId) || isCaretaker(circleId)) &&
+        isValidCareCircle(request.resource.data) &&
+        areImmutableFieldsUnchanged(['circleCode', 'rolePasscodeHashes', 'createdAt']) &&
+        (isElder(circleId) ||
+         !('autonomySettings' in resource.data) ||
+         request.resource.data.autonomySettings == resource.data.autonomySettings);
+
+      allow delete: if false;
+
+      // ---------------------------------------------------------------
+      // Medications Schedule & Pill Inventory
+      // ---------------------------------------------------------------
+      match /medications/{medicationId} {
+        allow read: if isCircleMember(circleId);
+
+        allow create: if (isCaretaker(circleId) || isElder(circleId)) &&
+          isValidMedication(request.resource.data, circleId);
+
+        allow update: if (isCaretaker(circleId) || isElder(circleId)) &&
+          isValidMedication(request.resource.data, circleId) &&
+          areImmutableFieldsUnchanged(['createdAt', 'circleId']);
+
+        allow delete: if isCaretaker(circleId) || isElder(circleId);
+      }
+
+      // ---------------------------------------------------------------
+      // Medication Adherence & Dose Logs
+      // ---------------------------------------------------------------
+      match /doseLogs/{logId} {
+        allow read: if isCircleMember(circleId);
+
+        allow create: if (isElder(circleId) || isCaretaker(circleId)) &&
+          isValidDoseLog(request.resource.data, circleId);
+
+        allow update: if (isElder(circleId) || isCaretaker(circleId)) &&
+          isValidDoseLog(request.resource.data, circleId) &&
+          areImmutableFieldsUnchanged(['medicationId', 'scheduledTime', 'circleId']);
+
+        // Adherence history is an immutable clinical audit trail
+        allow delete: if false;
+      }
+
+      // ---------------------------------------------------------------
+      // Medical Appointments & Preparation Checklists
+      // ---------------------------------------------------------------
+      match /appointments/{appointmentId} {
+        allow read: if isCircleMember(circleId);
+
+        allow create: if (isCaretaker(circleId) || isElder(circleId)) &&
+          isValidAppointment(request.resource.data, circleId);
+
+        allow update: if (isCaretaker(circleId) || isElder(circleId)) &&
+          isValidAppointment(request.resource.data, circleId) &&
+          areImmutableFieldsUnchanged(['createdAt', 'circleId']);
+
+        allow delete: if isCaretaker(circleId) || isElder(circleId);
+      }
+
+      // ---------------------------------------------------------------
+      // Daily Healthcare Routines & Vitals
+      // ---------------------------------------------------------------
+      match /vitals/{vitalId} {
+        allow read: if isCircleMember(circleId);
+
+        allow create: if (isElder(circleId) || isCaretaker(circleId)) &&
+          isValidVital(request.resource.data, circleId);
+
+        allow update: if (isElder(circleId) || isCaretaker(circleId)) &&
+          isValidVital(request.resource.data, circleId) &&
+          areImmutableFieldsUnchanged(['type', 'recordedAt', 'circleId']);
+
+        allow delete: if isCaretaker(circleId);
+      }
+
+      // ---------------------------------------------------------------
+      // Proactive Email Reminders Outbox & Audit Log
+      // ---------------------------------------------------------------
+      match /emailReminders/{reminderId} {
+        allow read: if isCircleMember(circleId);
+
+        allow create: if (isCaretaker(circleId) || isElder(circleId)) &&
+          isValidEmailReminder(request.resource.data, circleId);
+
+        allow update: if (isCaretaker(circleId) || isElder(circleId)) &&
+          isValidEmailReminder(request.resource.data, circleId) &&
+          areImmutableFieldsUnchanged(['idempotencyKey', 'type', 'recipientEmail', 'circleId']);
+
+        allow delete: if isCaretaker(circleId) || isElder(circleId);
+      }
+
+      // ---------------------------------------------------------------
+      // Shared Care Circle Journal Notes
+      // ---------------------------------------------------------------
+      match /careNotes/{noteId} {
+        allow read: if isCircleMember(circleId);
+
+        // All circle members (elder, caretaker, family) can contribute care notes
+        allow create: if isCircleMember(circleId) &&
+          isValidCareNote(request.resource.data, circleId);
+
+        allow update: if (isCaretaker(circleId) || isElder(circleId)) &&
+          isValidCareNote(request.resource.data, circleId) &&
+          areImmutableFieldsUnchanged(['authorName', 'role', 'createdAt', 'circleId']) &&
+          uidNotModified();
+
+        allow delete: if isCaretaker(circleId);
+      }
+    }
+
+    // ===============================================================
+    // Default Deny All Other Paths
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
