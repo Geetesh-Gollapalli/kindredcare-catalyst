@@ -109,6 +109,8 @@ export function CaretakerClinicalView({
   onRunAutoScanEmails,
   onOpenFridgeSheet,
   onToast,
+  activeTab,
+  onTabChange,
 }: {
   elderName: string;
   elderAge: number;
@@ -152,8 +154,15 @@ export function CaretakerClinicalView({
   onRunAutoScanEmails: (customRecipient?: string) => Promise<void>;
   onOpenFridgeSheet: () => void;
   onToast: (msg: string) => void;
+  activeTab?: 'shift' | 'meds' | 'appts' | 'emails';
+  onTabChange?: (tab: 'shift' | 'meds' | 'appts' | 'emails') => void;
 }) {
-  const [tab, setTab] = useState<'shift' | 'meds' | 'appts' | 'emails'>('shift');
+  const [internalTab, setInternalTab] = useState<'shift' | 'meds' | 'appts' | 'emails'>('shift');
+  const tab = activeTab ?? internalTab;
+  const setTab = (next: 'shift' | 'meds' | 'appts' | 'emails') => {
+    setInternalTab(next);
+    onTabChange?.(next);
+  };
   const [medFilter, setMedFilter] = useState<'all' | 'daily' | 'weekly' | 'prn' | 'low'>('all');
 
   // Shift Handoff State

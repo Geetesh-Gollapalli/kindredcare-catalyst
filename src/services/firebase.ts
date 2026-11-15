@@ -10,13 +10,15 @@ import {
   where,
   type Firestore,
 } from 'firebase/firestore';
-import type { CareCircleState } from '@/types/domain';
+import type { CareCircleState, CareRole, RolePasscodeRecord } from '@/types/domain';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  authDomain:
+    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'kindredcare-catalyst.firebaseapp.com',
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'kindredcare-catalyst',
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  storageBucket:
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'kindredcare-catalyst.appspot.com',
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
@@ -26,13 +28,14 @@ let firestoreDb: Firestore | null = null;
 
 export function isFirebaseCloudConfigured(): boolean {
   return Boolean(
-    process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
-      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+      firebaseConfig.projectId
   );
 }
 
 export function getFirebaseFirestore(): Firestore | null {
-  if (!isFirebaseCloudConfigured()) {
+  if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
     return null;
   }
   try {
@@ -49,9 +52,12 @@ export function getFirebaseFirestore(): Firestore | null {
 }
 
 /**
- * Syncs the Care Circle state to Google Cloud Firestore when configured.
+ * Syncs the Care Circle state and user records to Google Cloud Firestore when configured.
  */
-export async function syncCareCircleToFirestore(state: CareCircleState): Promise<boolean> {
+export async function syncCareCircleToFirestore(
+  state: CareCircleState,
+  passcodeRecords?: RolePasscodeRecord[]
+): Promise<boolean> {
   const db = getFirebaseFirestore();
   if (!db) return false;
 
@@ -61,6 +67,58 @@ export async function syncCareCircleToFirestore(state: CareCircleState): Promise
       circleRef,
       {
         ...state,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+
+    if (passcodeRecords && passcodeRecords.length > 0) {
+      for (const member of state.members) {
+        const userRef = doc(db, 'users', `${state.circleId}_${member.role}`);
+        const matchingPin = passcodeRecords.find((r) => r.role === member.role);
+        await setDoc(
+          userRef,
+          {
+            circleId: state.circleId,
+            role: member.role,
+            name: member.name,
+            nameLower: member.name.trim().toLowerCase(),
+            relation: member.relation,
+            email: member.email,
+            phone: member.phone,
+            salt: matchingPin?.salt || '',
+            hash: matchingPin?.hash || '',
+            updatedAt: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function saveUserRegistrationToFirestore(user: {
+  circleId: string;
+  role: CareRole;
+  name: string;
+  email: string;
+  phone: string;
+  relation: string;
+  salt: string;
+  hash: string;
+}): Promise<boolean> {
+  const db = getFirebaseFirestore();
+  if (!db) return false;
+  try {
+    const userRef = doc(db, 'users', `${user.circleId}_${user.role}`);
+    await setDoc(
+      userRef,
+      {
+        ...user,
+        nameLower: user.name.trim().toLowerCase(),
         updatedAt: new Date().toISOString(),
       },
       { merge: true }

@@ -7,7 +7,7 @@ import {
   recordFailedPasscodeAttempt,
   signSessionToken,
 } from '@/lib/security';
-import { DEFAULT_PASSCODE_RECORDS, getCareCircleState } from '@/services/store';
+import { getCareCircleState, getPasscodeRecords } from '@/services/store';
 import { SESSION_COOKIE_NAME } from '@/lib/api-auth';
 
 export async function POST(req: NextRequest) {
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         {
-          error: 'Invalid passcode or Care Circle format.',
+          error: 'Please enter your Name and a valid 4+ digit PIN.',
           details: parsed.error.flatten().fieldErrors,
         },
         { status: 400 }
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     if (!rateCheck.allowed) {
       return NextResponse.json(
         {
-          error: `Too many failed passcode attempts. Care Circle locked for ${rateCheck.retryAfterSeconds}s.`,
+          error: `Too many failed PIN attempts. Access locked for ${rateCheck.retryAfterSeconds}s.`,
           retryAfterSeconds: rateCheck.retryAfterSeconds,
         },
         { status: 429 }
@@ -41,17 +41,11 @@ export async function POST(req: NextRequest) {
     }
 
     const circle = getCareCircleState();
-    if (circleCode !== circle.circleCode.toUpperCase()) {
-      recordFailedPasscodeAttempt(rateKey);
-      return NextResponse.json(
-        { error: 'Care Circle code not found. Use KC-2026 for the live care circle.' },
-        { status: 404 }
-      );
-    }
+    const activePasscodes = getPasscodeRecords();
 
     const matchedRecord = authenticateRoleByPasscode(
       passcode,
-      DEFAULT_PASSCODE_RECORDS,
+      activePasscodes,
       role
     );
 
@@ -60,7 +54,7 @@ export async function POST(req: NextRequest) {
       const updatedRate = checkPasscodeRateLimit(rateKey);
       return NextResponse.json(
         {
-          error: `Incorrect passcode for Care Circle ${circleCode}. (${updatedRate.remainingAttempts} attempts remaining)`,
+          error: `Incorrect PIN for the selected role. (${updatedRate.remainingAttempts} attempts remaining)`,
         },
         { status: 401 }
       );
@@ -69,7 +63,7 @@ export async function POST(req: NextRequest) {
     clearPasscodeRateLimit(rateKey);
 
     const resolvedName =
-      memberName ||
+      memberName?.trim() ||
       circle.members.find((m) => m.role === matchedRecord.role)?.name ||
       matchedRecord.label;
 

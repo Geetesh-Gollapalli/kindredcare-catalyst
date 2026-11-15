@@ -29,6 +29,7 @@ export interface OnboardingFormData {
   mobilityAndComfortNotes: string;
   primaryDoctor: string;
   emergencyPhone: string;
+  elderPin: string;
   wakeTime: string;
   breakfastTime: string;
   lunchTime: string;
@@ -37,9 +38,13 @@ export interface OnboardingFormData {
   caretakerName: string;
   caretakerShift: string;
   caretakerEmail: string;
+  caretakerPhone?: string;
+  caretakerPin: string;
   familyName: string;
   familyRelation: string;
   familyEmail: string;
+  familyPhone?: string;
+  familyPin: string;
   language: 'English' | 'Hindi' | 'Telugu' | 'Tamil' | 'Spanish';
   graceMinutes: 15 | 30 | 60;
   allowFamilyEdits: boolean;
@@ -351,7 +356,7 @@ export function OnboardingWizard({
               onClick={onSkipToDemo}
               className="rounded-xl border border-black/15 bg-[#F6F5F1] px-4 py-2 text-xs font-bold text-[#14171A] transition hover:bg-[#EFECE6]"
             >
-              Skip Setup → Open Pre-Loaded Demo (KC-2026)
+              Already Registered? Sign In →
             </button>
           </div>
         </div>
@@ -359,10 +364,10 @@ export function OnboardingWizard({
         {/* Stepper Pills */}
         <div className="mb-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {[
-            { n: 1, title: '1. Ecosystem & AI PDF Scan', sub: 'How it works + Auto-fill' },
-            { n: 2, title: '2. Elder Health & Routine', sub: 'Allergies, conditions, meals' },
+            { n: 1, title: '1. Welcome & AI PDF Scan', sub: 'Upload discharge summary' },
+            { n: 2, title: '2. Elder Health & Routine', sub: 'Profile, allergies, meals' },
             { n: 3, title: '3. Medicines & Purpose', sub: 'What you take & why' },
-            { n: 4, title: '4. Care Team & Passcodes', sub: 'Caretaker, family & alerts' },
+            { n: 4, title: '4. Care Team & Security PINs', sub: 'Set Name & PIN for each role' },
           ].map((s) => (
             <button
               key={s.n}
@@ -403,9 +408,9 @@ export function OnboardingWizard({
                   Built so an elder never needs to be Einstein.
                 </h1>
                 <p className="mt-1.5 text-sm text-[#57606A]">
-                  KindredCare connects one Care Circle (`KC-2026`) across{' '}
-                  <strong>three strictly separated role screens</strong> so each person
-                  only sees what is designed for them:
+                  KindredCare connects your care circle across{' '}
+                  <strong>three strictly separated role workspaces</strong> so each person
+                  signs in with their Name &amp; PIN and sees only what is built for them:
                 </p>
               </div>
 
@@ -413,7 +418,7 @@ export function OnboardingWizard({
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4">
                   <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
-                    1. Elder Screen (PIN: 1234)
+                    1. Elder Companion
                   </div>
                   <h3 className="mt-1 text-base font-bold">Calm 3-Button Companion</h3>
                   <p className="mt-1 text-xs leading-relaxed text-[#57606A]">
@@ -424,7 +429,7 @@ export function OnboardingWizard({
                 </div>
                 <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4">
                   <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
-                    2. Caretaker Screen (PIN: 2026)
+                    2. Caretaker Station
                   </div>
                   <h3 className="mt-1 text-base font-bold">Clinical Care Station</h3>
                   <p className="mt-1 text-xs leading-relaxed text-[#57606A]">
@@ -435,7 +440,7 @@ export function OnboardingWizard({
                 </div>
                 <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4">
                   <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
-                    3. Family Screen (PIN: 8899)
+                    3. Family Hub
                   </div>
                   <h3 className="mt-1 text-base font-bold">Peace-of-Mind Hub</h3>
                   <p className="mt-1 text-xs leading-relaxed text-[#57606A]">
@@ -980,14 +985,12 @@ export function OnboardingWizard({
                     <span className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
                       Primary Caretaker (Updates Daily Progress)
                     </span>
-                    <span className="rounded bg-[#0F524B] px-2 py-0.5 font-mono text-[11px] font-bold text-white">
-                      PIN: 2026 / CARE2026
-                    </span>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Caretaker Name</label>
+                    <label className="block text-xs font-semibold">Caretaker Full Name</label>
                     <input
                       type="text"
+                      placeholder="e.g., Nurse Ananya Rao"
                       value={form.caretakerName}
                       onChange={(e) =>
                         setForm({ ...form, caretakerName: e.target.value })
@@ -996,9 +999,22 @@ export function OnboardingWizard({
                     />
                   </div>
                   <div>
+                    <label className="block text-xs font-semibold">Caretaker Security PIN (4+ digits)</label>
+                    <input
+                      type="password"
+                      placeholder="Set Caretaker PIN (e.g., 2026)"
+                      value={form.caretakerPin}
+                      onChange={(e) =>
+                        setForm({ ...form, caretakerPin: e.target.value })
+                      }
+                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
                     <label className="block text-xs font-semibold">Shift &amp; Duties</label>
                     <input
                       type="text"
+                      placeholder="e.g., Morning & Evening Clinical Shift"
                       value={form.caretakerShift}
                       onChange={(e) =>
                         setForm({ ...form, caretakerShift: e.target.value })
@@ -1010,6 +1026,7 @@ export function OnboardingWizard({
                     <label className="block text-xs font-semibold">Caretaker Alert Email</label>
                     <input
                       type="email"
+                      placeholder="caretaker@example.com"
                       value={form.caretakerEmail}
                       onChange={(e) =>
                         setForm({ ...form, caretakerEmail: e.target.value })
@@ -1025,23 +1042,32 @@ export function OnboardingWizard({
                     <span className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
                       Family Coordinator (Checks Progress &amp; Refills)
                     </span>
-                    <span className="rounded bg-[#14171A] px-2 py-0.5 font-mono text-[11px] font-bold text-white">
-                      PIN: 8899 / FAMILY26
-                    </span>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Family Member Name</label>
+                    <label className="block text-xs font-semibold">Family Member Full Name</label>
                     <input
                       type="text"
+                      placeholder="e.g., Geetesh Gollapalli"
                       value={form.familyName}
                       onChange={(e) => setForm({ ...form, familyName: e.target.value })}
                       className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs"
                     />
                   </div>
                   <div>
+                    <label className="block text-xs font-semibold">Family Security PIN (4+ digits)</label>
+                    <input
+                      type="password"
+                      placeholder="Set Family PIN (e.g., 8899)"
+                      value={form.familyPin}
+                      onChange={(e) => setForm({ ...form, familyPin: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 font-mono text-xs"
+                    />
+                  </div>
+                  <div>
                     <label className="block text-xs font-semibold">Relation &amp; Role</label>
                     <input
                       type="text"
+                      placeholder="e.g., Son / Grandson & Family Coordinator"
                       value={form.familyRelation}
                       onChange={(e) =>
                         setForm({ ...form, familyRelation: e.target.value })
@@ -1055,6 +1081,7 @@ export function OnboardingWizard({
                     </label>
                     <input
                       type="email"
+                      placeholder="family@example.com"
                       value={form.familyEmail}
                       onChange={(e) => setForm({ ...form, familyEmail: e.target.value })}
                       className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-xs"
@@ -1066,9 +1093,21 @@ export function OnboardingWizard({
               {/* Elder Autonomy Defaults */}
               <div className="rounded-xl border border-black/10 bg-[#F6F5F1] p-4">
                 <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
-                  Elder Autonomy &amp; Voice Defaults (“My Care, My Choice” • Elder PIN: 1234)
+                  Elder Personal Security PIN, Autonomy &amp; Voice Defaults (“My Care, My Choice”)
                 </div>
-                <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                <div className="mt-3 grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <label className="block text-xs font-semibold">
+                      Elder Security PIN (4+ digits)
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="Set Elder PIN (e.g., 1234)"
+                      value={form.elderPin}
+                      onChange={(e) => setForm({ ...form, elderPin: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 font-mono text-xs"
+                    />
+                  </div>
                   <div>
                     <label className="block text-xs font-semibold">
                       Elder Preferred Language &amp; Voice Readout
@@ -1152,8 +1191,8 @@ export function OnboardingWizard({
                   className="rounded-xl bg-[#0F524B] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#0A3C36] disabled:opacity-60"
                 >
                   {saving
-                    ? 'Saving Care Circle Setup...'
-                    : '✓ Complete Setup & Open Passcode Portal (KC-2026)'}
+                    ? 'Saving Profile to Firebase & Cloud DB...'
+                    : '✓ Complete Registration & Proceed to Sign In'}
                 </button>
               </div>
             </div>

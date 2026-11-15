@@ -6,6 +6,7 @@ import { AutonomyUpdateSchema } from '@/lib/validation';
 import { isFirebaseCloudConfigured } from '@/services/firebase';
 import {
   getCareCircleState,
+  isCircleOnboarded,
   updateAutonomyInStore,
   updateCareCircleProfileInStore,
 } from '@/services/store';
@@ -13,6 +14,7 @@ import {
 export async function GET(req: NextRequest) {
   const session = await getAuthenticatedSession(req);
   const circle = getCareCircleState();
+  const isOnboarded = isCircleOnboarded();
   const metrics = calculateAdherenceMetrics(
     circle.medications,
     circle.doseLogs,
@@ -22,6 +24,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     authenticated: Boolean(session),
+    isOnboarded,
     session,
     circle,
     metrics,
@@ -71,16 +74,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const body = (await req.json()) as {
-    elderName?: string;
-    elderAge?: number;
-    bloodGroup?: string;
-    allergies?: string[];
-    conditions?: string[];
-    primaryDoctor?: string;
-    emergencyPhone?: string;
-    autonomySettings?: Record<string, unknown>;
-  };
+  const body = await req.json();
 
   const updated = await updateCareCircleProfileInStore({
     elderName: body.elderName,
@@ -90,9 +84,21 @@ export async function PUT(req: NextRequest) {
     conditions: body.conditions,
     primaryDoctor: body.primaryDoctor,
     emergencyPhone: body.emergencyPhone,
+    elderPin: body.elderPin,
+    caretakerName: body.caretakerName,
+    caretakerEmail: body.caretakerEmail,
+    caretakerPhone: body.caretakerPhone,
+    caretakerPin: body.caretakerPin,
+    familyName: body.familyName,
+    familyRelation: body.familyRelation,
+    familyEmail: body.familyEmail,
+    familyPhone: body.familyPhone,
+    familyPin: body.familyPin,
+    medications: body.medications,
   });
 
   return NextResponse.json({
+    isOnboarded: true,
     circle: updated,
   });
 }

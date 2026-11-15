@@ -27,6 +27,8 @@ export function FamilyPeaceHubView({
   onRefillMed,
   onSendFamilyNote,
   onDispatchEmail,
+  activeTab,
+  onTabChange,
 }: {
   elderName: string;
   familyName: string;
@@ -60,8 +62,15 @@ export function FamilyPeaceHubView({
     preview: string;
     customRecipient?: string;
   }) => Promise<void>;
+  activeTab?: 'peace' | 'schedule' | 'alerts';
+  onTabChange?: (tab: 'peace' | 'schedule' | 'alerts') => void;
 }) {
-  const [tab, setTab] = useState<'peace' | 'schedule' | 'alerts'>('peace');
+  const [internalTab, setInternalTab] = useState<'peace' | 'schedule' | 'alerts'>('peace');
+  const tab = activeTab ?? internalTab;
+  const setTab = (next: 'peace' | 'schedule' | 'alerts') => {
+    setInternalTab(next);
+    onTabChange?.(next);
+  };
   const [selectedDayIdx, setSelectedDayIdx] = useState<number>(6);
   const [noteCategory, setNoteCategory] = useState('encouragement');
   const [noteMessage, setNoteMessage] = useState('');

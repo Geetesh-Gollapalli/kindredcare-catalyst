@@ -8,6 +8,7 @@ export const PasscodeLoginSchema = z.object({
     .trim()
     .min(3, 'Care Circle code is required')
     .max(20)
+    .default('KC-2026')
     .transform((v) => v.toUpperCase()),
   passcode: z
     .string()

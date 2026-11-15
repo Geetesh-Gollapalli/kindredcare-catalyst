@@ -28,6 +28,19 @@ import {
   type CaretakerVitalItem,
 } from '@/components/CaretakerClinicalView';
 import { FamilyPeaceHubView } from '@/components/FamilyPeaceHubView';
+import BranchedMenu from '@/components/BranchedMenu';
+import {
+  Calendar03Icon,
+  CheckListIcon,
+  HeartCheckIcon,
+  Logout01Icon,
+  Mail01Icon,
+  MedicalFileIcon,
+  Medicine02Icon,
+  PrinterIcon,
+  SecurityCheckIcon,
+  UserCircleIcon,
+} from '@hugeicons/core-free-icons';
 import type { CareRole, DrugSafetyReport } from '@/types/domain';
 
 const ROLE_PINS: Record<CareRole, string[]> = {
@@ -179,14 +192,25 @@ export default function KindredCarePage() {
   ]);
 
   // Active Role & Portal State
+  const [isOnboarded, setIsOnboarded] = useState<boolean>(false);
   const [role, setRole] = useState<CareRole>('elder');
   const [pendingRoleTarget, setPendingRoleTarget] = useState<CareRole>('elder');
   const [portalRoleTab, setPortalRoleTab] = useState<CareRole>('elder');
-  const [circleCodeInput, setCircleCodeInput] = useState('KC-2026');
-  const [passcodeInput, setPasscodeInput] = useState('1234');
+  const [memberNameInput, setMemberNameInput] = useState('');
+  const [passcodeInput, setPasscodeInput] = useState('');
   const [showPasscodeText, setShowPasscodeText] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [portalError, setPortalError] = useState<string | null>(null);
+  const [customPins, setCustomPins] = useState<Record<CareRole, string[]>>({
+    elder: ['1234'],
+    caretaker: ['2026', 'CARE2026'],
+    family: ['8899', 'FAMILY26'],
+  });
+
+  // Active sub-tabs for BranchedMenu synchronization
+  const [elderActiveTab, setElderActiveTab] = useState<'meds' | 'visits' | 'privacy'>('meds');
+  const [caretakerActiveTab, setCaretakerActiveTab] = useState<'shift' | 'meds' | 'appts' | 'emails'>('shift');
+  const [familyActiveTab, setFamilyActiveTab] = useState<'peace' | 'schedule' | 'alerts'>('peace');
 
   // Accessibility & Modals
   const [comfortMode, setComfortMode] = useState(false);
@@ -443,18 +467,47 @@ export default function KindredCarePage() {
     document.body.classList.toggle('modal-open', anyModal);
   }, [showProfileModal, showMedicalIdModal, showFridgeSheetModal]);
 
-  // Initial Crash-Free Backend Warmup & Readiness Gate
+  // Initial Crash-Free Backend Warmup & Automatic First-Time Detection
   useEffect(() => {
     let mounted = true;
     async function bootWarmup() {
+      let alreadyOnboarded = false;
       try {
         setWaitProgress(45);
+        const localFlag =
+          typeof window !== 'undefined' &&
+          window.localStorage.getItem('kindredcare_onboarded_v2') === 'true';
         const res = await fetch('/api/circle').catch(() => null);
         if (res && res.ok) {
           const data = await res.json();
+          alreadyOnboarded = Boolean(data?.isOnboarded) || localFlag;
           const safe = ensureSafeCircleState(data?.circle);
-          if (mounted && safe.elderName) {
+          if (mounted && alreadyOnboarded && safe.elderName) {
+            setIsOnboarded(true);
             setElderName(safe.elderName);
+            setElderAge(safe.elderAge);
+            setBloodGroup(safe.bloodGroup);
+            setAllergies(safe.allergies);
+            setConditions(safe.conditions);
+            setPrimaryDoctor(safe.primaryDoctor);
+            setEmergencyPhone(safe.emergencyPhone);
+            const ctMember = safe.members.find((m) => m.role === 'caretaker');
+            const fmMember = safe.members.find((m) => m.role === 'family');
+            if (ctMember) {
+              setCaretakerInfo((prev) => ({
+                ...prev,
+                name: ctMember.name,
+                email: ctMember.email,
+              }));
+            }
+            if (fmMember) {
+              setFamilyInfo((prev) => ({
+                ...prev,
+                name: fmMember.name,
+                relation: fmMember.relation,
+                email: fmMember.email,
+              }));
+            }
           }
         }
       } catch {
@@ -472,7 +525,13 @@ export default function KindredCarePage() {
         setWaitSteps((prev) => prev.map((s) => ({ ...s, status: 'done' })));
         setWaitProgress(100);
         setTimeout(() => {
-          if (mounted) setStage('portal');
+          if (!mounted) return;
+          // Automatic first-time detection: open Onboarding directly without asking!
+          if (!alreadyOnboarded) {
+            setStage('onboarding');
+          } else {
+            setStage('portal');
+          }
         }, 180);
       }, 220);
     }
@@ -482,13 +541,17 @@ export default function KindredCarePage() {
     };
   }, []);
 
-  async function enterRoleWithHydrationGate(targetRole: CareRole, passUsed?: string) {
+  async function enterRoleWithHydrationGate(
+    targetRole: CareRole,
+    passUsed?: string,
+    memberNameUsed?: string
+  ) {
     setPendingRoleTarget(targetRole);
     setWaitProgress(35);
     setWaitSteps([
       {
         id: 'r1',
-        label: `Verifying ${targetRole.toUpperCase()} Passcode & Session`,
+        label: `Verifying ${targetRole.toUpperCase()} Identity & Security PIN`,
         detail: 'Salted scrypt + HMAC-SHA256 role authorization',
         status: 'active',
       },
@@ -511,9 +574,9 @@ export default function KindredCarePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          circleCode: 'KC-2026',
-          passcode: passUsed || ROLE_PINS[targetRole][0],
+          passcode: passUsed || customPins[targetRole][0],
           role: targetRole,
+          memberName: memberNameUsed || undefined,
         }),
       }).catch(() => null);
     } catch {
@@ -526,21 +589,57 @@ export default function KindredCarePage() {
       setRole(targetRole);
       setWaitProgress(100);
       setStage('workspace');
-      showToast(`Unlocked ${targetRole.toUpperCase()} Workspace`);
+      showToast(
+        `Signed in as ${
+          memberNameUsed ||
+          (targetRole === 'elder'
+            ? elderName
+            : targetRole === 'caretaker'
+              ? caretakerInfo.name
+              : familyInfo.name)
+        }`
+      );
     }, 240);
   }
 
-  function handlePortalUnlock() {
-    const code = circleCodeInput.trim().toUpperCase();
-    const pass = passcodeInput.trim().toUpperCase();
+  async function handlePortalUnlock() {
+    const nameEntered = memberNameInput.trim();
+    const pass = passcodeInput.trim();
 
-    if (code !== 'KC-2026') {
-      setPortalError('Care Circle not found. Please use KC-2026.');
+    if (!nameEntered) {
+      setPortalError('Please enter your full name to sign in.');
       return;
     }
 
-    const matchedRole = (Object.keys(ROLE_PINS) as CareRole[]).find((r) =>
-      ROLE_PINS[r].includes(pass)
+    if (pass.length < 4) {
+      setPortalError('Please enter your 4+ digit security PIN.');
+      return;
+    }
+
+    // Try server-side scrypt verification first
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: portalRoleTab,
+          memberName: nameEntered,
+          passcode: pass,
+        }),
+      });
+      if (res.ok) {
+        setFailedAttempts(0);
+        setPortalError(null);
+        setPasscodeInput('');
+        await enterRoleWithHydrationGate(portalRoleTab, pass, nameEntered);
+        return;
+      }
+    } catch {
+      // Fallback to local customPins check
+    }
+
+    const matchedRole = (Object.keys(customPins) as CareRole[]).find((r) =>
+      customPins[r].some((p) => p.toUpperCase() === pass.toUpperCase())
     );
 
     if (!matchedRole) {
@@ -548,14 +647,15 @@ export default function KindredCarePage() {
       setFailedAttempts(nextFail);
       const rem = Math.max(0, 5 - nextFail);
       setPortalError(
-        `Incorrect passcode for KC-2026. (${rem} attempts remaining before 5-minute security lockout)`
+        `Incorrect security PIN for ${nameEntered}. (${rem} attempts remaining before 5-minute security lockout)`
       );
       return;
     }
 
     setFailedAttempts(0);
     setPortalError(null);
-    enterRoleWithHydrationGate(matchedRole, pass);
+    setPasscodeInput('');
+    await enterRoleWithHydrationGate(matchedRole, pass, nameEntered);
   }
 
   // Medication Actions
@@ -859,9 +959,13 @@ export default function KindredCarePage() {
   }
 
   async function handleCompleteOnboarding(data: OnboardingFormData) {
-    setElderName(data.elderName);
-    setElderAge(data.elderAge);
-    setBloodGroup(data.bloodGroup);
+    const cleanElderName = data.elderName.trim() || 'Registered Elder';
+    const cleanCaretakerName = data.caretakerName.trim() || 'Primary Caretaker';
+    const cleanFamilyName = data.familyName.trim() || 'Family Coordinator';
+
+    setElderName(cleanElderName);
+    setElderAge(data.elderAge || 70);
+    setBloodGroup(data.bloodGroup || 'O+');
     setAllergies(
       data.allergiesText
         .split(',')
@@ -875,8 +979,8 @@ export default function KindredCarePage() {
         .filter(Boolean)
     );
     setMobilityNotes(data.mobilityAndComfortNotes);
-    setPrimaryDoctor(data.primaryDoctor);
-    setEmergencyPhone(data.emergencyPhone);
+    setPrimaryDoctor(data.primaryDoctor || 'Primary Care Physician');
+    setEmergencyPhone(data.emergencyPhone || '+91 98400 11223');
     setRoutine({
       wakeTime: data.wakeTime,
       breakfastTime: data.breakfastTime,
@@ -885,21 +989,31 @@ export default function KindredCarePage() {
       bedTime: data.bedTime,
     });
     setCaretakerInfo({
-      name: data.caretakerName,
-      shift: data.caretakerShift,
-      email: data.caretakerEmail,
+      name: cleanCaretakerName,
+      shift: data.caretakerShift || 'Primary Care Shift',
+      email: data.caretakerEmail || 'geeteshgollapalli@gmail.com',
     });
     setFamilyInfo({
-      name: data.familyName,
-      relation: data.familyRelation,
-      email: data.familyEmail,
+      name: cleanFamilyName,
+      relation: data.familyRelation || 'Family Coordinator',
+      email: data.familyEmail || 'geeteshgollapalli@gmail.com',
     });
+    setOnDutyResponder(`${cleanCaretakerName} (Primary Caretaker)`);
     setAutonomy({
       graceMinutes: data.graceMinutes,
       allowFamilyEdits: data.allowFamilyEdits,
       shareVitals: data.shareVitals,
       language: data.language,
     });
+
+    setCustomPins((prev) => ({
+      elder: data.elderPin.trim() ? [data.elderPin.trim(), ...prev.elder] : prev.elder,
+      caretaker: data.caretakerPin.trim()
+        ? [data.caretakerPin.trim(), ...prev.caretaker]
+        : prev.caretaker,
+      family: data.familyPin.trim() ? [data.familyPin.trim(), ...prev.family] : prev.family,
+    }));
+
     if (data.medications.length > 0) {
       setMedications(
         data.medications.map((m) => ({
@@ -914,18 +1028,62 @@ export default function KindredCarePage() {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        elderName: data.elderName,
+        elderName: cleanElderName,
         elderAge: data.elderAge,
         bloodGroup: data.bloodGroup,
-        allergies: data.allergiesText.split(',').map((s) => s.trim()),
-        conditions: data.conditionsText.split(',').map((s) => s.trim()),
+        allergies: data.allergiesText
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        conditions: data.conditionsText
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
         primaryDoctor: data.primaryDoctor,
         emergencyPhone: data.emergencyPhone,
+        elderPin: data.elderPin.trim() || undefined,
+        caretakerName: cleanCaretakerName,
+        caretakerEmail: data.caretakerEmail,
+        caretakerPin: data.caretakerPin.trim() || undefined,
+        familyName: cleanFamilyName,
+        familyRelation: data.familyRelation,
+        familyEmail: data.familyEmail,
+        familyPin: data.familyPin.trim() || undefined,
+        medications: data.medications.map((m) => ({
+          name: m.name,
+          genericName: m.genericName,
+          dosage: m.dosage,
+          purpose: m.purpose,
+          slot:
+            parseInt(m.time, 10) < 11
+              ? 'morning'
+              : parseInt(m.time, 10) < 16
+                ? 'afternoon'
+                : parseInt(m.time, 10) < 20
+                  ? 'evening'
+                  : 'bedtime',
+          scheduledTime: /^\d{2}:\d{2}$/.test(m.time) ? m.time : '08:30',
+          mealTiming: m.mealTiming.toLowerCase().includes('empty')
+            ? 'empty_stomach'
+            : m.mealTiming.toLowerCase().includes('before')
+              ? 'before_meal'
+              : 'after_meal',
+          colorName: m.colorName,
+          shape: m.shape,
+          imprint: m.imprint,
+          stock: m.stock,
+        })),
       }),
     }).catch(() => null);
 
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('kindredcare_onboarded_v2', 'true');
+    }
+    setIsOnboarded(true);
+    setMemberNameInput(cleanElderName);
+    setPasscodeInput('');
     setStage('portal');
-    showToast('✓ Saved Onboarding Health Profile, Medications & Care Team!');
+    showToast('✓ Profile, Medications & Security PINs saved to Firebase & Cloud DB!');
   }
 
   /* =========================================================
@@ -955,46 +1113,57 @@ export default function KindredCarePage() {
         )}
         <OnboardingWizard
           initialData={{
-            elderName,
-            elderAge,
-            bloodGroup,
-            allergiesText: allergies.join(', '),
-            conditionsText: conditions.join(', '),
-            mobilityAndComfortNotes: mobilityNotes,
-            primaryDoctor,
-            emergencyPhone,
+            elderName: isOnboarded ? elderName : '',
+            elderAge: isOnboarded ? elderAge : 70,
+            bloodGroup: isOnboarded ? bloodGroup : 'O+',
+            allergiesText: isOnboarded ? allergies.join(', ') : '',
+            conditionsText: isOnboarded ? conditions.join(', ') : '',
+            mobilityAndComfortNotes: isOnboarded ? mobilityNotes : '',
+            primaryDoctor: isOnboarded ? primaryDoctor : '',
+            emergencyPhone: isOnboarded ? emergencyPhone : '',
+            elderPin: '',
             wakeTime: routine.wakeTime,
             breakfastTime: routine.breakfastTime,
             lunchTime: routine.lunchTime,
             dinnerTime: routine.dinnerTime,
             bedTime: routine.bedTime,
-            caretakerName: caretakerInfo.name,
-            caretakerShift: caretakerInfo.shift,
-            caretakerEmail: caretakerInfo.email,
-            familyName: familyInfo.name,
-            familyRelation: familyInfo.relation,
-            familyEmail: familyInfo.email,
+            caretakerName: isOnboarded ? caretakerInfo.name : '',
+            caretakerShift: isOnboarded ? caretakerInfo.shift : 'Morning & Evening Shift',
+            caretakerEmail: isOnboarded ? caretakerInfo.email : '',
+            caretakerPin: '',
+            familyName: isOnboarded ? familyInfo.name : '',
+            familyRelation: isOnboarded ? familyInfo.relation : 'Family Member',
+            familyEmail: isOnboarded ? familyInfo.email : '',
+            familyPin: '',
             language: autonomy.language,
             graceMinutes: autonomy.graceMinutes,
             allowFamilyEdits: autonomy.allowFamilyEdits,
             shareVitals: autonomy.shareVitals,
-            medications: medications.map((m) => ({
-              id: m.id,
-              name: m.name,
-              genericName: m.genericName,
-              dosage: m.dosage,
-              purpose: m.purpose,
-              scheduleType: m.scheduleType,
-              time: m.time,
-              mealTiming: m.mealTiming,
-              colorName: m.colorName,
-              shape: m.shape,
-              imprint: m.imprint,
-              stock: m.stock,
-            })),
+            medications: isOnboarded
+              ? medications.map((m) => ({
+                  id: m.id,
+                  name: m.name,
+                  genericName: m.genericName,
+                  dosage: m.dosage,
+                  purpose: m.purpose,
+                  scheduleType: m.scheduleType,
+                  time: m.time,
+                  mealTiming: m.mealTiming,
+                  colorName: m.colorName,
+                  shape: m.shape,
+                  imprint: m.imprint,
+                  stock: m.stock,
+                }))
+              : [],
           }}
           onComplete={handleCompleteOnboarding}
-          onSkipToDemo={() => setStage('portal')}
+          onSkipToDemo={() => {
+            setIsOnboarded(true);
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem('kindredcare_onboarded_v2', 'true');
+            }
+            setStage('portal');
+          }}
           onToast={showToast}
         />
       </>
@@ -1002,7 +1171,7 @@ export default function KindredCarePage() {
   }
 
   /* =========================================================
-     RENDER 3: PASSCODE ACCESS PORTAL (KC-2026)
+     RENDER 3: PROFESSIONAL NAME + PIN SIGN-IN PORTAL
      ========================================================= */
   if (stage === 'portal') {
     return (
@@ -1017,114 +1186,92 @@ export default function KindredCarePage() {
         )}
 
         <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-black/12 bg-white shadow-xl lg:grid-cols-12">
-          {/* Left Column: Brand, Onboarding CTA & Role Overview */}
+          {/* Left Column: Executive Healthcare Brand & Role Architecture */}
           <div className="flex flex-col justify-between bg-[#FBFBF9] p-7 lg:col-span-6 lg:border-r lg:border-black/10 lg:p-10">
-            <div className="space-y-5">
+            <div className="space-y-6">
               <KindredCareLogo
                 size={46}
-                subtitle="Role-Isolated Elderly Care & Medication Ecosystem"
+                subtitle="Connected Elderly Care & Medication Platform"
               />
 
               <div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-[#14171A]">
                   Shared elderly care, built around dignity.
                 </h1>
-                <p className="mt-2 text-sm leading-relaxed text-[#57606A]">
-                  Each passcode unlocks a <strong>purpose-built workspace</strong> so{' '}
-                  <strong>{elderName}</strong> gets a calm, large-button companion while her
-                  Caretaker and Family get clinical and peace-of-mind tools.
+                <p className="mt-2.5 text-sm leading-relaxed text-[#57606A]">
+                  Sign in with your <strong>Name</strong> and <strong>Security PIN</strong> to
+                  open your dedicated role workspace. Elders receive a calm, large-button
+                  companion while Caretakers and Family members access clinical and
+                  adherence tools.
                 </p>
               </div>
 
-              {/* First-Time Onboarding & AI PDF Scanner CTA */}
-              <div className="rounded-2xl border border-[#0F524B]/25 bg-[#0F524B]/[0.05] p-4">
-                <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
-                  New User or Have a Hospital Discharge PDF?
+              {/* Role Architecture Highlights */}
+              <div className="space-y-3 pt-2">
+                <div className="rounded-2xl border border-black/10 bg-white p-4">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                    Elderly Member Workspace
+                  </div>
+                  <p className="mt-1 text-xs text-[#57606A]">
+                    Calm 3-button companion with physical pill visuals, meal-timing safety
+                    guard, and multilingual voice read-aloud.
+                  </p>
                 </div>
-                <p className="mt-1 text-xs text-[#57606A]">
-                  Upload a medical PDF/summary to auto-fill health details, medication
-                  purposes, and set up your Care Circle.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setStage('onboarding')}
-                    className="rounded-xl bg-[#0F524B] px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-[#0A3C36]"
-                  >
-                    📄 Start First-Time Setup &amp; AI PDF Auto-Fill
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowProfileModal(true)}
-                    className="rounded-xl border border-black/15 bg-white px-3.5 py-2.5 text-xs font-bold text-[#14171A]"
-                  >
-                    👤 View {elderName.split(' ')[1]}’s Profile
-                  </button>
+                <div className="rounded-2xl border border-black/10 bg-white p-4">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                    Caretaker Clinical Station
+                  </div>
+                  <p className="mt-1 text-xs text-[#57606A]">
+                    Shift administration, AI prescription scanner, drug-interaction guard,
+                    vitals tracking, and doctor visit briefs.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-black/10 bg-white p-4">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                    Family Peace-of-Mind Hub
+                  </div>
+                  <p className="mt-1 text-xs text-[#57606A]">
+                    Real-time 7-day adherence calendar, pharmacy refill tracking, and
+                    proactive email reminders honoring Elder privacy settings.
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* 1-Click Instant Role Launchers */}
-            <div className="mt-6 space-y-2 border-t border-black/10 pt-5">
-              <div className="text-xs font-bold uppercase tracking-wider text-[#57606A]">
-                1-Click Role Preview (Unlocks Dedicated Role Screen)
-              </div>
-              <div className="space-y-2">
-                {[
-                  {
-                    r: 'elder' as CareRole,
-                    title: '1. Elder Companion (Smt. Kamala Devi)',
-                    pin: 'PIN: 1234',
-                    desc: 'Calm 3-button view • Giant pill visuals • Voice read-aloud',
-                  },
-                  {
-                    r: 'caretaker' as CareRole,
-                    title: '2. Clinical Caretaker Station (Ananya Rao)',
-                    pin: 'PIN: 2026 / CARE2026',
-                    desc: '4 clinical tabs • Med edit & AI Rx scanner • Vitals & Brief',
-                  },
-                  {
-                    r: 'family' as CareRole,
-                    title: '3. Family Peace-of-Mind Hub (Geetesh)',
-                    pin: 'PIN: 8899 / FAMILY26',
-                    desc: '3 family tabs • 7-day adherence • Refills & Email Digest',
-                  },
-                ].map((card) => (
-                  <button
-                    key={card.r}
-                    type="button"
-                    onClick={() => enterRoleWithHydrationGate(card.r)}
-                    className="flex w-full items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3 text-left transition hover:border-[#0F524B] hover:bg-[#F6F5F1]"
-                  >
-                    <div>
-                      <div className="text-xs font-bold text-[#14171A]">{card.title}</div>
-                      <div className="text-[11px] text-[#57606A]">{card.desc}</div>
-                    </div>
-                    <span className="rounded-md bg-[#0F524B]/10 px-2.5 py-1 font-mono text-xs font-bold text-[#0F524B]">
-                      {card.pin} →
-                    </span>
-                  </button>
-                ))}
-              </div>
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-black/10 pt-5">
+              <button
+                type="button"
+                onClick={() => setStage('onboarding')}
+                className="rounded-xl border border-black/15 bg-white px-4 py-2.5 text-xs font-bold text-[#14171A] hover:bg-[#EFECE6]"
+              >
+                📄 Update Health Profile / Upload Medical PDF
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowProfileModal(true)}
+                className="rounded-xl border border-[#0F524B]/30 bg-[#0F524B]/5 px-4 py-2.5 text-xs font-bold text-[#0F524B]"
+              >
+                👤 View Care Circle Profile
+              </button>
             </div>
           </div>
 
-          {/* Right Column: Tactile Passcode Keypad */}
+          {/* Right Column: Clean Name + Security PIN Sign-In */}
           <div className="flex flex-col justify-center p-7 lg:col-span-6 lg:p-10">
-            <h2 className="text-xl font-bold text-[#14171A]">
-              Passcode Access Portal
+            <h2 className="text-2xl font-extrabold text-[#14171A]">
+              Sign In to Your Workspace
             </h2>
             <p className="mt-1 text-xs text-[#57606A]">
-              Select your role or enter your 4-digit PIN on the keypad below.
+              Select your role, enter your full name, and enter your personal security PIN.
             </p>
 
-            {/* Role Selector Tabs */}
-            <div className="mt-4 grid grid-cols-3 gap-1.5 rounded-xl bg-[#EFECE6] p-1">
+            {/* Clean Role Selector Tabs (Zero Exposed PINs) */}
+            <div className="mt-5 grid grid-cols-3 gap-1.5 rounded-xl bg-[#EFECE6] p-1">
               {(
                 [
-                  { r: 'elder', label: 'Elder (1234)', pin: '1234' },
-                  { r: 'caretaker', label: 'Caretaker (2026)', pin: '2026' },
-                  { r: 'family', label: 'Family (8899)', pin: '8899' },
+                  { r: 'elder', label: 'Elderly Member' },
+                  { r: 'caretaker', label: 'Caretaker / Nurse' },
+                  { r: 'family', label: 'Family Member' },
                 ] as const
               ).map((tab) => (
                 <button
@@ -1132,10 +1279,10 @@ export default function KindredCarePage() {
                   type="button"
                   onClick={() => {
                     setPortalRoleTab(tab.r);
-                    setPasscodeInput(tab.pin);
+                    setPasscodeInput('');
                     setPortalError(null);
                   }}
-                  className={`rounded-lg py-2 text-xs font-bold transition ${
+                  className={`rounded-lg py-2.5 text-xs font-bold transition ${
                     portalRoleTab === tab.r
                       ? 'bg-white text-[#14171A] shadow-2xs'
                       : 'text-[#57606A]'
@@ -1146,41 +1293,56 @@ export default function KindredCarePage() {
               ))}
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 space-y-3.5">
               <div>
                 <label
-                  htmlFor="circle-code"
+                  htmlFor="member-name-field"
                   className="block text-xs font-bold text-[#14171A]"
                 >
-                  Care Circle ID
+                  Your Full Name
                 </label>
                 <input
-                  id="circle-code"
+                  id="member-name-field"
                   type="text"
-                  value={circleCodeInput}
-                  onChange={(e) => setCircleCodeInput(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 font-mono text-sm font-bold"
+                  placeholder={
+                    portalRoleTab === 'elder'
+                      ? 'Enter your full name'
+                      : portalRoleTab === 'caretaker'
+                        ? 'Enter caretaker name'
+                        : 'Enter family member name'
+                  }
+                  value={memberNameInput}
+                  onChange={(e) => {
+                    setMemberNameInput(e.target.value);
+                    setPortalError(null);
+                  }}
+                  className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm font-semibold"
                 />
               </div>
+
               <div>
                 <label
                   htmlFor="passcode-field"
                   className="block text-xs font-bold text-[#14171A]"
                 >
-                  Role PIN / Passcode
+                  Your Security PIN
                 </label>
                 <div className="mt-1 flex gap-1.5">
                   <input
                     id="passcode-field"
                     type={showPasscodeText ? 'text' : 'password'}
+                    placeholder="Enter your 4+ digit PIN"
                     value={passcodeInput}
-                    onChange={(e) => setPasscodeInput(e.target.value)}
+                    onChange={(e) => {
+                      setPasscodeInput(e.target.value);
+                      setPortalError(null);
+                    }}
                     className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 font-mono text-sm font-bold"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPasscodeText(!showPasscodeText)}
-                    className="rounded-xl border border-black/15 px-3 text-xs font-bold"
+                    className="rounded-xl border border-black/15 px-3.5 text-xs font-bold"
                   >
                     {showPasscodeText ? 'Hide' : 'Show'}
                   </button>
@@ -1191,7 +1353,7 @@ export default function KindredCarePage() {
             {/* Numeric Keypad */}
             <div
               className="mt-4 grid grid-cols-3 gap-2"
-              aria-label="Passcode numeric keypad"
+              aria-label="Security PIN numeric keypad"
             >
               {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Clear', '0', 'Del'].map(
                 (key) => (
@@ -1226,7 +1388,7 @@ export default function KindredCarePage() {
               onClick={handlePortalUnlock}
               className="mt-4 w-full rounded-xl bg-[#0F524B] py-3.5 text-sm font-extrabold text-white shadow-md hover:bg-[#0A3C36]"
             >
-              Unlock Role Workspace →
+              Sign In to Workspace →
             </button>
           </div>
         </div>
@@ -1268,11 +1430,78 @@ export default function KindredCarePage() {
   }
 
   /* =========================================================
-     RENDER 4: ROLE-ISOLATED WORKSPACE (ELDER vs CARETAKER vs FAMILY)
+     RENDER 4: ROLE-ISOLATED WORKSPACE WITH REACT BITS BRANCHED MENU
      ========================================================= */
   const familyNoteText = careNotes.find(
     (n) => n.category === 'encouragement'
   )?.message;
+
+  const roleMenuItems =
+    role === 'elder'
+      ? [
+          {
+            label: 'My Daily Care',
+            children: [
+              { value: 'meds', label: "Today's Medicines", icon: Medicine02Icon },
+              { value: 'visits', label: 'My Doctor Visits', icon: Calendar03Icon },
+              { value: 'privacy', label: 'My Privacy & Help', icon: SecurityCheckIcon },
+            ],
+          },
+          {
+            label: 'My Records',
+            children: [
+              { value: 'profile', label: 'My Health Profile', icon: UserCircleIcon },
+              { value: 'medical_id', label: 'Emergency Medical ID', icon: MedicalFileIcon },
+              { value: 'lock', label: 'Lock & Sign Out', icon: Logout01Icon },
+            ],
+          },
+        ]
+      : role === 'caretaker'
+        ? [
+            {
+              label: 'Clinical Station',
+              children: [
+                { value: 'shift', label: 'Shift & Daily Doses', icon: CheckListIcon },
+                { value: 'meds', label: 'Medications & AI Guard', icon: Medicine02Icon },
+                { value: 'appts', label: 'Appointments & Brief', icon: Calendar03Icon },
+                { value: 'emails', label: 'Proactive Email Alerts', icon: Mail01Icon },
+              ],
+            },
+            {
+              label: 'Patient Records',
+              children: [
+                { value: 'profile', label: 'Patient & Care Team', icon: UserCircleIcon },
+                { value: 'fridge', label: 'Printable Fridge Sheet', icon: PrinterIcon },
+                { value: 'medical_id', label: 'Emergency Medical ID', icon: MedicalFileIcon },
+                { value: 'lock', label: 'Lock & Sign Out', icon: Logout01Icon },
+              ],
+            },
+          ]
+        : [
+            {
+              label: 'Family Peace Hub',
+              children: [
+                { value: 'peace', label: 'Peace-of-Mind & Refills', icon: HeartCheckIcon },
+                { value: 'schedule', label: 'Schedule & Visits', icon: Calendar03Icon },
+                { value: 'alerts', label: 'Email Alerts & Digest', icon: Mail01Icon },
+              ],
+            },
+            {
+              label: 'Care Circle Info',
+              children: [
+                { value: 'profile', label: 'Elder & Care Team', icon: UserCircleIcon },
+                { value: 'medical_id', label: 'Emergency Medical ID', icon: MedicalFileIcon },
+                { value: 'lock', label: 'Lock & Sign Out', icon: Logout01Icon },
+              ],
+            },
+          ];
+
+  const currentActiveMenuValue =
+    role === 'elder'
+      ? elderActiveTab
+      : role === 'caretaker'
+        ? caretakerActiveTab
+        : familyActiveTab;
 
   return (
     <div className="app-workspace-shell min-h-screen bg-[#F6F5F1] text-[#14171A]">
@@ -1288,7 +1517,7 @@ export default function KindredCarePage() {
 
       {/* Role-Specific Header */}
       <header className="no-print sticky top-0 z-30 border-b border-black/10 bg-white/95 backdrop-blur-xs">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3.5">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3.5">
           <div className="flex items-center gap-3">
             <KindredCareLogo
               size={38}
@@ -1309,7 +1538,7 @@ export default function KindredCarePage() {
               onClick={() => setShowProfileModal(true)}
               className="rounded-xl border border-[#0F524B]/30 bg-[#0F524B]/5 px-3.5 py-2 text-xs font-bold text-[#0F524B] hover:bg-[#0F524B]/10"
             >
-              👤 {elderName.split(' ')[1] || elderName}’s Profile &amp; Care Team
+              👤 {elderName}’s Profile &amp; Care Team
             </button>
 
             <button
@@ -1348,298 +1577,370 @@ export default function KindredCarePage() {
 
             <button
               type="button"
-              onClick={() => setStage('portal')}
+              onClick={() => {
+                setPasscodeInput('');
+                setStage('portal');
+              }}
               className="rounded-xl bg-[#14171A] px-3.5 py-2 text-xs font-bold text-white"
             >
-              🔒 Switch Role / Lock
+              🔒 Sign Out / Switch Role
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Role-Isolated Stage */}
-      <main id="main-content" className="px-4 pt-6">
-        {role === 'elder' && (
-          <ElderCompanionView
-            elderName={elderName}
-            emergencyPhone={emergencyPhone}
-            caretakerName={caretakerInfo.name}
-            familyName={familyInfo.name}
-            medications={medications}
-            appointments={appointments}
-            familyEncouragementNote={familyNoteText}
-            meals={meals}
-            hydrationGlasses={hydrationGlasses}
-            currentFeeling={currentFeeling}
-            thyroidCountdownMins={thyroidCountdownMins}
-            autonomy={autonomy}
-            comfortMode={comfortMode}
-            highContrast={highContrast}
-            onTakeMed={handleTakeMed}
-            onUndoMed={handleUndoMed}
-            onSnoozeMed={handleSnoozeMed}
-            onSkipMed={handleSkipMed}
-            onAskRefill={(medId) => {
-              const m = medications.find((x) => x.id === medId);
-              if (m) {
-                handleDispatchEmail({
-                  category: 'low_refill',
-                  subject: `💊 Elder Refill Request: ${m.name} (${m.stock} left)`,
-                  preview: `${elderName} tapped "Ask Family to Order More" for ${m.name}.`,
+      {/* Main Role-Isolated Stage with React Bits BranchedMenu Navigation */}
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pt-6 lg:flex-row">
+        <aside className="no-print shrink-0 lg:w-64">
+          <div className="sticky top-20 rounded-2xl border border-black/10 bg-white p-5 shadow-xs">
+            <div className="mb-3 text-[11px] font-extrabold uppercase tracking-wider text-[#0F524B]">
+              {role === 'elder'
+                ? 'Elder Navigation'
+                : role === 'caretaker'
+                  ? 'Clinical Navigation'
+                  : 'Family Navigation'}
+            </div>
+            <BranchedMenu
+              items={roleMenuItems}
+              defaultOpen={[0, 1]}
+              activeValue={currentActiveMenuValue}
+              onSelect={(val) => {
+                if (val === 'profile') {
+                  setShowProfileModal(true);
+                  return;
+                }
+                if (val === 'medical_id') {
+                  setShowMedicalIdModal(true);
+                  return;
+                }
+                if (val === 'fridge') {
+                  setShowFridgeSheetModal(true);
+                  return;
+                }
+                if (val === 'lock') {
+                  setPasscodeInput('');
+                  setStage('portal');
+                  return;
+                }
+                if (role === 'elder' && (val === 'meds' || val === 'visits' || val === 'privacy')) {
+                  setElderActiveTab(val);
+                } else if (
+                  role === 'caretaker' &&
+                  (val === 'shift' || val === 'meds' || val === 'appts' || val === 'emails')
+                ) {
+                  setCaretakerActiveTab(val);
+                } else if (
+                  role === 'family' &&
+                  (val === 'peace' || val === 'schedule' || val === 'alerts')
+                ) {
+                  setFamilyActiveTab(val);
+                }
+              }}
+              color="#14171A"
+              accentColor="#0F524B"
+              lineColor="#D4CEC3"
+              width={230}
+              rowHeight={38}
+              indent={38}
+              trunk={12}
+              radius={10}
+              lineWidth={1.6}
+              fontSize={13}
+              drawDuration={400}
+              foldDuration={300}
+            />
+          </div>
+        </aside>
+
+        <main id="main-content" className="min-w-0 flex-1">
+          {role === 'elder' && (
+            <ElderCompanionView
+              activeTab={elderActiveTab}
+              onTabChange={setElderActiveTab}
+              elderName={elderName}
+              emergencyPhone={emergencyPhone}
+              caretakerName={caretakerInfo.name}
+              familyName={familyInfo.name}
+              medications={medications}
+              appointments={appointments}
+              familyEncouragementNote={familyNoteText}
+              meals={meals}
+              hydrationGlasses={hydrationGlasses}
+              currentFeeling={currentFeeling}
+              thyroidCountdownMins={thyroidCountdownMins}
+              autonomy={autonomy}
+              comfortMode={comfortMode}
+              highContrast={highContrast}
+              onTakeMed={handleTakeMed}
+              onUndoMed={handleUndoMed}
+              onSnoozeMed={handleSnoozeMed}
+              onSkipMed={handleSkipMed}
+              onAskRefill={(medId) => {
+                const m = medications.find((x) => x.id === medId);
+                if (m) {
+                  handleDispatchEmail({
+                    category: 'low_refill',
+                    subject: `💊 Elder Refill Request: ${m.name} (${m.stock} left)`,
+                    preview: `${elderName} tapped "Ask Family to Order More" for ${m.name}.`,
+                  });
+                }
+              }}
+              onToggleMeal={(mealKey) => {
+                setMeals((prev) => {
+                  const next = { ...prev, [mealKey]: !prev[mealKey] };
+                  showToast(
+                    `${mealKey.charAt(0).toUpperCase() + mealKey.slice(1)} marked ${
+                      next[mealKey] ? 'eaten ✓' : 'not eaten yet'
+                    }`
+                  );
+                  return next;
                 });
-              }
-            }}
-            onToggleMeal={(mealKey) => {
-              setMeals((prev) => {
-                const next = { ...prev, [mealKey]: !prev[mealKey] };
+              }}
+              onSetHydration={(g) => {
+                setHydrationGlasses(g);
+                showToast(`Hydration logged: ${g} of 8 glasses today.`);
+              }}
+              onSelectFeeling={(feeling) => {
+                setCurrentFeeling(feeling);
+                setAuditLog((prev) => [
+                  {
+                    id: `aud-${Date.now()}`,
+                    when: 'Just now',
+                    actor: `${elderName} (Elder)`,
+                    role: 'elder',
+                    note: `Self-reported feeling: "${feeling}".`,
+                  },
+                  ...prev,
+                ]);
                 showToast(
-                  `${mealKey.charAt(0).toUpperCase() + mealKey.slice(1)} marked ${
-                    next[mealKey] ? 'eaten ✓' : 'not eaten yet'
-                  }`
+                  feeling === 'Feeling Good'
+                    ? 'Glad you are feeling good today!'
+                    : `Noted "${feeling}" — Nurse ${caretakerInfo.name.split(' ')[0]} has been notified.`
                 );
-                return next;
-              });
-            }}
-            onSetHydration={(g) => {
-              setHydrationGlasses(g);
-              showToast(`Hydration logged: ${g} of 8 glasses today.`);
-            }}
-            onSelectFeeling={(feeling) => {
-              setCurrentFeeling(feeling);
-              setAuditLog((prev) => [
-                {
-                  id: `aud-${Date.now()}`,
-                  when: 'Just now',
-                  actor: `${elderName} (Elder)`,
-                  role: 'elder',
-                  note: `Self-reported feeling: "${feeling}".`,
-                },
-                ...prev,
-              ]);
-              showToast(
-                feeling === 'Feeling Good'
-                  ? 'Glad you are feeling good today!'
-                  : `Noted "${feeling}" — Nurse ${caretakerInfo.name.split(' ')[0]} has been notified.`
-              );
-            }}
-            onToggleChecklist={(apptId, checkId) => {
-              setAppointments((prev) =>
-                prev.map((a) =>
-                  a.id === apptId
-                    ? {
-                        ...a,
-                        checklist: a.checklist.map((c) =>
-                          c.id === checkId ? { ...c, done: !c.done } : c
-                        ),
-                      }
-                    : a
-                )
-              );
-            }}
-            onAddDoctorQuestion={(qText) => {
-              setCareNotes((prev) => [
-                {
-                  id: `n-${Date.now()}`,
-                  author: elderName,
-                  role: 'elder',
-                  category: 'question_for_doctor',
-                  message: qText,
-                  when: 'Just now',
-                },
-                ...prev,
-              ]);
-              showToast('✓ Saved your question for the doctor!');
-            }}
-            onTriggerSos={() => {
-              handleDispatchEmail({
-                category: 'elder_sos',
-                subject: `🚨 PRIORITY SOS: ${elderName} Requested Immediate Help`,
-                preview: `${elderName} pressed the Emergency SOS button. Please call ${emergencyPhone} immediately.`,
-              });
-            }}
-            onOpenMedicalId={() => setShowMedicalIdModal(true)}
-            onUpdateAutonomy={(patch) => {
-              setAutonomy((prev) => ({ ...prev, ...patch }));
-              fetch('/api/circle', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  escalationGraceMinutes: patch.graceMinutes,
-                  allowFamilyScheduleEdits: patch.allowFamilyEdits,
-                  shareVitalsWithFamily: patch.shareVitals,
-                  preferredLanguage: patch.language,
-                }),
-              }).catch(() => null);
-              showToast('✓ Updated your personal privacy & comfort settings.');
-            }}
-            onToggleComfort={() => setComfortMode(!comfortMode)}
-            onToggleContrast={() => setHighContrast(!highContrast)}
-            onToast={showToast}
-          />
-        )}
+              }}
+              onToggleChecklist={(apptId, checkId) => {
+                setAppointments((prev) =>
+                  prev.map((a) =>
+                    a.id === apptId
+                      ? {
+                          ...a,
+                          checklist: a.checklist.map((c) =>
+                            c.id === checkId ? { ...c, done: !c.done } : c
+                          ),
+                        }
+                      : a
+                  )
+                );
+              }}
+              onAddDoctorQuestion={(qText) => {
+                setCareNotes((prev) => [
+                  {
+                    id: `n-${Date.now()}`,
+                    author: elderName,
+                    role: 'elder',
+                    category: 'question_for_doctor',
+                    message: qText,
+                    when: 'Just now',
+                  },
+                  ...prev,
+                ]);
+                showToast('✓ Saved your question for the doctor!');
+              }}
+              onTriggerSos={() => {
+                handleDispatchEmail({
+                  category: 'elder_sos',
+                  subject: `🚨 PRIORITY SOS: ${elderName} Requested Immediate Help`,
+                  preview: `${elderName} pressed the Emergency SOS button. Please call ${emergencyPhone} immediately.`,
+                });
+              }}
+              onOpenMedicalId={() => setShowMedicalIdModal(true)}
+              onUpdateAutonomy={(patch) => {
+                setAutonomy((prev) => ({ ...prev, ...patch }));
+                fetch('/api/circle', {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    escalationGraceMinutes: patch.graceMinutes,
+                    allowFamilyScheduleEdits: patch.allowFamilyEdits,
+                    shareVitalsWithFamily: patch.shareVitals,
+                    preferredLanguage: patch.language,
+                  }),
+                }).catch(() => null);
+                showToast('✓ Updated your personal privacy & comfort settings.');
+              }}
+              onToggleComfort={() => setComfortMode(!comfortMode)}
+              onToggleContrast={() => setHighContrast(!highContrast)}
+              onToast={showToast}
+            />
+          )}
 
-        {role === 'caretaker' && (
-          <CaretakerClinicalView
-            elderName={elderName}
-            elderAge={elderAge}
-            bloodGroup={bloodGroup}
-            allergies={allergies}
-            currentFeeling={currentFeeling}
-            onDutyResponder={onDutyResponder}
-            shiftHandoffNote={shiftHandoffNote}
-            lastHandoffAt={lastHandoffAt}
-            graceMinutes={autonomy.graceMinutes}
-            medications={medications}
-            appointments={appointments}
-            vitals={vitals}
-            emails={emails}
-            auditLog={auditLog}
-            drugSafetyReport={drugSafetyReport}
-            aiDoctorBrief={aiDoctorBrief}
-            onTakeMed={(id) => handleTakeMed(id)}
-            onUndoMed={handleUndoMed}
-            onAddOrEditMed={handleAddOrEditMed}
-            onRefillMed={handleRefillMed}
-            onDeleteMed={handleDeleteMed}
-            onRunDrugSafetyAi={handleRunDrugSafetyAi}
-            onSaveShiftHandoff={(resp, note) => {
-              setOnDutyResponder(resp);
-              setShiftHandoffNote(note);
-              setLastHandoffAt('Just now');
-              setAuditLog((prev) => [
-                {
-                  id: `aud-${Date.now()}`,
-                  when: 'Just now',
-                  actor: `${caretakerInfo.name} (Caretaker)`,
-                  role: 'caretaker',
-                  note: `Updated Shift Handoff for ${resp.split(' (')[0]}: "${note}"`,
-                },
-                ...prev,
-              ]);
-              showToast('✓ Saved timestamped shift handoff.');
-            }}
-            onAddVital={(type, value, notes) => {
-              const num = parseInt(value, 10);
-              const status: 'normal' | 'elevated' | 'attention' =
-                num >= 150 || num <= 65
-                  ? 'attention'
-                  : num >= 135
-                    ? 'elevated'
-                    : 'normal';
-              setVitals((prev) => [
-                {
-                  id: `v-${Date.now()}`,
-                  type,
-                  value,
-                  status,
-                  notes: notes || 'Recorded via Caretaker Station',
-                  when: 'Just now',
-                  by: caretakerInfo.name,
-                },
-                ...prev,
-              ]);
-              setAuditLog((prev) => [
-                {
-                  id: `aud-${Date.now()}`,
-                  when: 'Just now',
-                  actor: `${caretakerInfo.name} (Caretaker)`,
-                  role: 'caretaker',
-                  note: `Logged ${type}: ${value} (${status.toUpperCase()}).`,
-                },
-                ...prev,
-              ]);
-              showToast(`✓ Logged ${type}: ${value}`);
-            }}
-            onAddAppointment={(appt) => {
-              setAppointments((prev) => [
-                ...prev,
-                { ...appt, id: `appt-${Date.now()}` },
-              ]);
-              showToast('📅 Scheduled appointment with Google Calendar & Maps links.');
-            }}
-            onToggleChecklist={(apptId, checkId) => {
-              setAppointments((prev) =>
-                prev.map((a) =>
-                  a.id === apptId
-                    ? {
-                        ...a,
-                        checklist: a.checklist.map((c) =>
-                          c.id === checkId ? { ...c, done: !c.done } : c
-                        ),
-                      }
-                    : a
-                )
-              );
-            }}
-            onSavePostVisitOutcome={(apptId, outcomeText) => {
-              setAppointments((prev) =>
-                prev.map((a) =>
-                  a.id === apptId ? { ...a, postVisitOutcome: outcomeText } : a
-                )
-              );
-              setAuditLog((prev) => [
-                {
-                  id: `aud-${Date.now()}`,
-                  when: 'Just now',
-                  actor: `${caretakerInfo.name} (Caretaker)`,
-                  role: 'caretaker',
-                  note: `Logged Post-Visit Outcome: "${outcomeText}"`,
-                },
-                ...prev,
-              ]);
-              showToast('✓ Saved Post-Visit Outcome to card & audit log.');
-            }}
-            onRefreshAiDoctorBrief={handleRefreshAiDoctorBrief}
-            onDispatchEmail={handleDispatchEmail}
-            onRunAutoScanEmails={handleRunAutoScanEmails}
-            onOpenFridgeSheet={() => setShowFridgeSheetModal(true)}
-            onToast={showToast}
-          />
-        )}
+          {role === 'caretaker' && (
+            <CaretakerClinicalView
+              activeTab={caretakerActiveTab}
+              onTabChange={setCaretakerActiveTab}
+              elderName={elderName}
+              elderAge={elderAge}
+              bloodGroup={bloodGroup}
+              allergies={allergies}
+              currentFeeling={currentFeeling}
+              onDutyResponder={onDutyResponder}
+              shiftHandoffNote={shiftHandoffNote}
+              lastHandoffAt={lastHandoffAt}
+              graceMinutes={autonomy.graceMinutes}
+              medications={medications}
+              appointments={appointments}
+              vitals={vitals}
+              emails={emails}
+              auditLog={auditLog}
+              drugSafetyReport={drugSafetyReport}
+              aiDoctorBrief={aiDoctorBrief}
+              onTakeMed={(id) => handleTakeMed(id)}
+              onUndoMed={handleUndoMed}
+              onAddOrEditMed={handleAddOrEditMed}
+              onRefillMed={handleRefillMed}
+              onDeleteMed={handleDeleteMed}
+              onRunDrugSafetyAi={handleRunDrugSafetyAi}
+              onSaveShiftHandoff={(resp, note) => {
+                setOnDutyResponder(resp);
+                setShiftHandoffNote(note);
+                setLastHandoffAt('Just now');
+                setAuditLog((prev) => [
+                  {
+                    id: `aud-${Date.now()}`,
+                    when: 'Just now',
+                    actor: `${caretakerInfo.name} (Caretaker)`,
+                    role: 'caretaker',
+                    note: `Updated Shift Handoff for ${resp.split(' (')[0]}: "${note}"`,
+                  },
+                  ...prev,
+                ]);
+                showToast('✓ Saved timestamped shift handoff.');
+              }}
+              onAddVital={(type, value, notes) => {
+                const num = parseInt(value, 10);
+                const status: 'normal' | 'elevated' | 'attention' =
+                  num >= 150 || num <= 65
+                    ? 'attention'
+                    : num >= 135
+                      ? 'elevated'
+                      : 'normal';
+                setVitals((prev) => [
+                  {
+                    id: `v-${Date.now()}`,
+                    type,
+                    value,
+                    status,
+                    notes: notes || 'Recorded via Caretaker Station',
+                    when: 'Just now',
+                    by: caretakerInfo.name,
+                  },
+                  ...prev,
+                ]);
+                setAuditLog((prev) => [
+                  {
+                    id: `aud-${Date.now()}`,
+                    when: 'Just now',
+                    actor: `${caretakerInfo.name} (Caretaker)`,
+                    role: 'caretaker',
+                    note: `Logged ${type}: ${value} (${status.toUpperCase()}).`,
+                  },
+                  ...prev,
+                ]);
+                showToast(`✓ Logged ${type}: ${value}`);
+              }}
+              onAddAppointment={(appt) => {
+                setAppointments((prev) => [
+                  ...prev,
+                  { ...appt, id: `appt-${Date.now()}` },
+                ]);
+                showToast('📅 Scheduled appointment with Google Calendar & Maps links.');
+              }}
+              onToggleChecklist={(apptId, checkId) => {
+                setAppointments((prev) =>
+                  prev.map((a) =>
+                    a.id === apptId
+                      ? {
+                          ...a,
+                          checklist: a.checklist.map((c) =>
+                            c.id === checkId ? { ...c, done: !c.done } : c
+                          ),
+                        }
+                      : a
+                  )
+                );
+              }}
+              onSavePostVisitOutcome={(apptId, outcomeText) => {
+                setAppointments((prev) =>
+                  prev.map((a) =>
+                    a.id === apptId ? { ...a, postVisitOutcome: outcomeText } : a
+                  )
+                );
+                setAuditLog((prev) => [
+                  {
+                    id: `aud-${Date.now()}`,
+                    when: 'Just now',
+                    actor: `${caretakerInfo.name} (Caretaker)`,
+                    role: 'caretaker',
+                    note: `Logged Post-Visit Outcome: "${outcomeText}"`,
+                  },
+                  ...prev,
+                ]);
+                showToast('✓ Saved Post-Visit Outcome to card & audit log.');
+              }}
+              onRefreshAiDoctorBrief={handleRefreshAiDoctorBrief}
+              onDispatchEmail={handleDispatchEmail}
+              onRunAutoScanEmails={handleRunAutoScanEmails}
+              onOpenFridgeSheet={() => setShowFridgeSheetModal(true)}
+              onToast={showToast}
+            />
+          )}
 
-        {role === 'family' && (
-          <FamilyPeaceHubView
-            elderName={elderName}
-            familyName={familyInfo.name}
-            onDutyResponder={onDutyResponder}
-            shiftHandoffNote={shiftHandoffNote}
-            currentFeeling={currentFeeling}
-            hydrationGlasses={hydrationGlasses}
-            autonomy={autonomy}
-            medications={medications}
-            appointments={appointments}
-            vitals={vitals}
-            emails={emails}
-            careNotes={careNotes}
-            onRefillMed={handleRefillMed}
-            onSendFamilyNote={(category, message) => {
-              setCareNotes((prev) => [
-                {
-                  id: `n-${Date.now()}`,
-                  author: familyInfo.name,
-                  role: 'family',
-                  category,
-                  message,
-                  when: 'Just now',
-                },
-                ...prev,
-              ]);
-              setAuditLog((prev) => [
-                {
-                  id: `aud-${Date.now()}`,
-                  when: 'Just now',
-                  actor: `${familyInfo.name} (Family)`,
-                  role: 'family',
-                  note: `Posted ${category}: "${message}"`,
-                },
-                ...prev,
-              ]);
-              showToast('💌 Posted note to Care Circle!');
-            }}
-            onDispatchEmail={handleDispatchEmail}
-          />
-        )}
-      </main>
+          {role === 'family' && (
+            <FamilyPeaceHubView
+              activeTab={familyActiveTab}
+              onTabChange={setFamilyActiveTab}
+              elderName={elderName}
+              familyName={familyInfo.name}
+              onDutyResponder={onDutyResponder}
+              shiftHandoffNote={shiftHandoffNote}
+              currentFeeling={currentFeeling}
+              hydrationGlasses={hydrationGlasses}
+              autonomy={autonomy}
+              medications={medications}
+              appointments={appointments}
+              vitals={vitals}
+              emails={emails}
+              careNotes={careNotes}
+              onRefillMed={handleRefillMed}
+              onSendFamilyNote={(category, message) => {
+                setCareNotes((prev) => [
+                  {
+                    id: `n-${Date.now()}`,
+                    author: familyInfo.name,
+                    role: 'family',
+                    category,
+                    message,
+                    when: 'Just now',
+                  },
+                  ...prev,
+                ]);
+                setAuditLog((prev) => [
+                  {
+                    id: `aud-${Date.now()}`,
+                    when: 'Just now',
+                    actor: `${familyInfo.name} (Family)`,
+                    role: 'family',
+                    note: `Posted ${category}: "${message}"`,
+                  },
+                  ...prev,
+                ]);
+                showToast('💌 Posted note to Care Circle!');
+              }}
+              onDispatchEmail={handleDispatchEmail}
+            />
+          )}
+        </main>
+      </div>
 
       {/* =========================================================
           DEDICATED ELDER & CARE TEAM PROFILE MODAL

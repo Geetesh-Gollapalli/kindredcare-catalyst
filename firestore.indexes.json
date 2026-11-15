@@ -1,27 +1,19 @@
 {
   "indexes": [
     {
-      "collectionGroup": "doseLogs",
+      "collectionGroup": "careCircles",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "circleId", "order": "ASCENDING" },
-        { "fieldPath": "scheduledTime", "order": "DESCENDING" }
+        { "fieldPath": "circleCode", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
       ]
     },
     {
-      "collectionGroup": "appointments",
+      "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "circleId", "order": "ASCENDING" },
-        { "fieldPath": "dateTime", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "emailReminders",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "idempotencyKey", "order": "ASCENDING" },
-        { "fieldPath": "sentAt", "order": "DESCENDING" }
+        { "fieldPath": "role", "order": "ASCENDING" },
+        { "fieldPath": "nameLower", "order": "ASCENDING" }
       ]
     }
   ],

@@ -1,6 +1,9 @@
+import fs from 'fs';
+import path from 'path';
 import type {
   Appointment,
   CareCircleState,
+  CareMember,
   CareNote,
   CareRole,
   DoseLog,
@@ -430,16 +433,77 @@ function createSeedCareCircle(): CareCircleState {
   };
 }
 
-// Global singleton in-memory + Firestore-synced store
+interface PersistedDatabasePayload {
+  isOnboarded: boolean;
+  state: CareCircleState;
+  passcodeRecords: RolePasscodeRecord[];
+}
+
+const DB_FILE_PATH = path.join(process.cwd(), '.data', 'care-circle-db.json');
+
+function loadPersistedDb(): PersistedDatabasePayload | null {
+  if (process.env.NODE_ENV === 'test') return null;
+  try {
+    if (!fs.existsSync(DB_FILE_PATH)) return null;
+    const raw = fs.readFileSync(DB_FILE_PATH, 'utf-8');
+    const parsed = JSON.parse(raw) as PersistedDatabasePayload;
+    if (parsed && parsed.state && Array.isArray(parsed.passcodeRecords)) {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function savePersistedDb(payload: PersistedDatabasePayload): void {
+  if (process.env.NODE_ENV === 'test') return;
+  try {
+    const dir = path.dirname(DB_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(DB_FILE_PATH, JSON.stringify(payload, null, 2), 'utf-8');
+  } catch {
+    // Non-fatal in read-only serverless environments where Firestore is primary
+  }
+}
+
+// Global singleton in-memory + Disk + Firestore-synced store
 const globalForStore = globalThis as unknown as {
   __kindredCareStore?: CareCircleState;
+  __kindredCarePasscodes?: RolePasscodeRecord[];
+  __kindredCareOnboarded?: boolean;
 };
 
-export function getCareCircleState(): CareCircleState {
+function ensureStoreInitialized() {
   if (!globalForStore.__kindredCareStore) {
-    globalForStore.__kindredCareStore = createSeedCareCircle();
+    const persisted = loadPersistedDb();
+    if (persisted) {
+      globalForStore.__kindredCareStore = persisted.state;
+      globalForStore.__kindredCarePasscodes = persisted.passcodeRecords;
+      globalForStore.__kindredCareOnboarded = Boolean(persisted.isOnboarded);
+    } else {
+      globalForStore.__kindredCareStore = createSeedCareCircle();
+      globalForStore.__kindredCarePasscodes = [...DEFAULT_PASSCODE_RECORDS];
+      globalForStore.__kindredCareOnboarded = false;
+    }
   }
-  return globalForStore.__kindredCareStore;
+}
+
+export function getCareCircleState(): CareCircleState {
+  ensureStoreInitialized();
+  return globalForStore.__kindredCareStore!;
+}
+
+export function getPasscodeRecords(): RolePasscodeRecord[] {
+  ensureStoreInitialized();
+  return globalForStore.__kindredCarePasscodes || DEFAULT_PASSCODE_RECORDS;
+}
+
+export function isCircleOnboarded(): boolean {
+  ensureStoreInitialized();
+  return Boolean(globalForStore.__kindredCareOnboarded);
 }
 
 export async function updateCareCircleState(
@@ -451,8 +515,14 @@ export async function updateCareCircleState(
     updatedAt: new Date().toISOString(),
   };
   globalForStore.__kindredCareStore = next;
+  const passcodes = getPasscodeRecords();
+  savePersistedDb({
+    isOnboarded: Boolean(globalForStore.__kindredCareOnboarded),
+    state: next,
+    passcodeRecords: passcodes,
+  });
   // Non-blocking sync to Cloud Firestore when configured
-  void syncCareCircleToFirestore(next);
+  void syncCareCircleToFirestore(next, passcodes);
   return next;
 }
 
@@ -596,21 +666,143 @@ export async function updateCareCircleProfileInStore(patch: {
   conditions?: string[];
   primaryDoctor?: string;
   emergencyPhone?: string;
+  elderPin?: string;
+  caretakerName?: string;
+  caretakerEmail?: string;
+  caretakerPhone?: string;
+  caretakerPin?: string;
+  familyName?: string;
+  familyRelation?: string;
+  familyEmail?: string;
+  familyPhone?: string;
+  familyPin?: string;
+  medications?: Array<{
+    name: string;
+    genericName?: string;
+    dosage: string;
+    purpose: string;
+    slot: 'morning' | 'afternoon' | 'evening' | 'bedtime';
+    scheduledTime: string;
+    mealTiming: 'before_meal' | 'with_meal' | 'after_meal' | 'empty_stomach' | 'anytime';
+    colorName?: string;
+    shape?: 'round' | 'oval' | 'capsule' | 'diamond';
+    imprint?: string;
+    stock?: number;
+  }>;
   autonomySettings?: Partial<ElderAutonomySettings>;
 }): Promise<CareCircleState> {
-  return updateCareCircleState((prev) => ({
-    ...prev,
-    elderName: patch.elderName?.trim() || prev.elderName,
-    elderAge: typeof patch.elderAge === 'number' ? patch.elderAge : prev.elderAge,
-    bloodGroup: patch.bloodGroup?.trim() || prev.bloodGroup,
-    allergies: Array.isArray(patch.allergies) ? patch.allergies : prev.allergies,
-    conditions: Array.isArray(patch.conditions) ? patch.conditions : prev.conditions,
-    primaryDoctor: patch.primaryDoctor?.trim() || prev.primaryDoctor,
-    emergencyPhone: patch.emergencyPhone?.trim() || prev.emergencyPhone,
-    autonomySettings: patch.autonomySettings
-      ? { ...prev.autonomySettings, ...patch.autonomySettings }
-      : prev.autonomySettings,
-  }));
+  ensureStoreInitialized();
+  globalForStore.__kindredCareOnboarded = true;
+
+  // Update dynamic passcodes if provided during onboarding
+  const currentPasscodes = [...getPasscodeRecords()];
+  const elderLabel = `${patch.elderName?.trim() || 'Elder'} (Elder Owner)`;
+  const caretakerLabel = `${patch.caretakerName?.trim() || 'Caretaker'} (Primary Caretaker)`;
+  const familyLabel = `${patch.familyName?.trim() || 'Family'} (Family Circle)`;
+
+  if (patch.elderPin && patch.elderPin.trim().length >= 4) {
+    const hashed = hashPasscode(patch.elderPin.trim());
+    currentPasscodes.unshift({
+      role: 'elder',
+      salt: hashed.salt,
+      hash: hashed.hash,
+      label: elderLabel,
+    });
+  }
+  if (patch.caretakerPin && patch.caretakerPin.trim().length >= 4) {
+    const hashed = hashPasscode(patch.caretakerPin.trim());
+    currentPasscodes.unshift({
+      role: 'caretaker',
+      salt: hashed.salt,
+      hash: hashed.hash,
+      label: caretakerLabel,
+    });
+  }
+  if (patch.familyPin && patch.familyPin.trim().length >= 4) {
+    const hashed = hashPasscode(patch.familyPin.trim());
+    currentPasscodes.unshift({
+      role: 'family',
+      salt: hashed.salt,
+      hash: hashed.hash,
+      label: familyLabel,
+    });
+  }
+  globalForStore.__kindredCarePasscodes = currentPasscodes;
+
+  return updateCareCircleState((prev) => {
+    const nextElderName = patch.elderName?.trim() || prev.elderName;
+    const nextMembers: CareMember[] = prev.members.map((m) => {
+      if (m.role === 'elder') {
+        return {
+          ...m,
+          name: nextElderName,
+          phone: patch.emergencyPhone?.trim() || m.phone,
+        };
+      }
+      if (m.role === 'caretaker') {
+        return {
+          ...m,
+          name: patch.caretakerName?.trim() || m.name,
+          email: patch.caretakerEmail?.trim() || m.email,
+          phone: patch.caretakerPhone?.trim() || m.phone,
+        };
+      }
+      if (m.role === 'family') {
+        return {
+          ...m,
+          name: patch.familyName?.trim() || m.name,
+          relation: patch.familyRelation?.trim() || m.relation,
+          email: patch.familyEmail?.trim() || m.email,
+          phone: patch.familyPhone?.trim() || m.phone,
+        };
+      }
+      return m;
+    });
+
+    const nextMedications: Medication[] =
+      Array.isArray(patch.medications) && patch.medications.length > 0
+        ? patch.medications.map((med, idx) => ({
+            id: `med-onb-${idx + 1}`,
+            circleId: prev.circleId,
+            name: med.name,
+            genericName: med.genericName || med.name,
+            dosage: med.dosage,
+            purpose: med.purpose,
+            plainExplanation: `Prescribed for ${med.purpose.toLowerCase()}. Take ${med.dosage} at ${med.scheduledTime}.`,
+            slot: med.slot,
+            scheduledTime: med.scheduledTime,
+            mealTiming: med.mealTiming,
+            appearance: {
+              color: med.colorName || 'White',
+              shape: med.shape || 'round',
+              imprint: med.imprint || 'MED',
+            },
+            prescribedBy: patch.primaryDoctor?.trim() || prev.primaryDoctor,
+            stockCount: typeof med.stock === 'number' ? med.stock : 28,
+            refillThreshold: 7,
+            instructions: `Take ${med.dosage} (${med.mealTiming.replace('_', ' ')})`,
+            sideEffectsWatch: ['Monitor for any unusual dizziness or stomach discomfort'],
+            active: true,
+            createdAt: new Date().toISOString(),
+          }))
+        : prev.medications;
+
+    return {
+      ...prev,
+      elderName: nextElderName,
+      elderAge: typeof patch.elderAge === 'number' ? patch.elderAge : prev.elderAge,
+      bloodGroup: patch.bloodGroup?.trim() || prev.bloodGroup,
+      allergies: Array.isArray(patch.allergies) ? patch.allergies : prev.allergies,
+      conditions: Array.isArray(patch.conditions) ? patch.conditions : prev.conditions,
+      primaryDoctor: patch.primaryDoctor?.trim() || prev.primaryDoctor,
+      emergencyPhone: patch.emergencyPhone?.trim() || prev.emergencyPhone,
+      members: nextMembers,
+      medications: nextMedications,
+      autonomySettings: patch.autonomySettings
+        ? { ...prev.autonomySettings, ...patch.autonomySettings }
+        : prev.autonomySettings,
+    };
+  });
 }
 
 export async function addAppointmentToStore(

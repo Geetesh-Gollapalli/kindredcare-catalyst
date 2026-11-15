@@ -48,6 +48,8 @@ export function ElderCompanionView({
   onToggleComfort,
   onToggleContrast,
   onToast,
+  activeTab,
+  onTabChange,
 }: {
   elderName: string;
   emergencyPhone: string;
@@ -84,8 +86,15 @@ export function ElderCompanionView({
   onToggleComfort: () => void;
   onToggleContrast: () => void;
   onToast: (msg: string) => void;
+  activeTab?: 'meds' | 'visits' | 'privacy';
+  onTabChange?: (tab: 'meds' | 'visits' | 'privacy') => void;
 }) {
-  const [subScreen, setSubScreen] = useState<'meds' | 'visits' | 'privacy'>('meds');
+  const [internalSubScreen, setInternalSubScreen] = useState<'meds' | 'visits' | 'privacy'>('meds');
+  const subScreen = activeTab ?? internalSubScreen;
+  const setSubScreen = (next: 'meds' | 'visits' | 'privacy') => {
+    setInternalSubScreen(next);
+    onTabChange?.(next);
+  };
   const [showGuide, setShowGuide] = useState(true);
   const [showWeeklyPrnDrawer, setShowWeeklyPrnDrawer] = useState(false);
   const [mealPromptMed, setMealPromptMed] = useState<{
