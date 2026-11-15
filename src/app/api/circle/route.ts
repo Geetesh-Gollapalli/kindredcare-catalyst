@@ -7,6 +7,7 @@ import { isFirebaseCloudConfigured } from '@/services/firebase';
 import {
   getCareCircleState,
   isCircleOnboarded,
+  resetCareCircleInStore,
   updateAutonomyInStore,
   updateCareCircleProfileInStore,
 } from '@/services/store';
@@ -100,5 +101,14 @@ export async function PUT(req: NextRequest) {
   return NextResponse.json({
     isOnboarded: true,
     circle: updated,
+  });
+}
+
+export async function DELETE() {
+  const circle = await resetCareCircleInStore();
+  return NextResponse.json({
+    deleted: true,
+    isOnboarded: false,
+    circle,
   });
 }

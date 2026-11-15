@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { KindredCareLogo, PillBadgeSvg } from './KindredCareBrand';
+import CodeSlots from './CodeSlots';
 import type { PillShape } from '@/types/domain';
 
 export interface OnboardingMedicationDraft {
@@ -999,16 +1000,25 @@ export function OnboardingWizard({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Caretaker Security PIN (4+ digits)</label>
-                    <input
-                      type="password"
-                      placeholder="Set Caretaker PIN (e.g., 2026)"
-                      value={form.caretakerPin}
-                      onChange={(e) =>
-                        setForm({ ...form, caretakerPin: e.target.value })
-                      }
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 font-mono text-xs"
-                    />
+                    <label className="block text-xs font-semibold">Caretaker Security PIN (4 digits)</label>
+                    <div className="mt-1.5 flex items-center justify-center rounded-xl bg-[#18181b] py-2.5 px-3">
+                      <CodeSlots
+                        length={4}
+                        value={form.caretakerPin.replace(/\D/g, '').slice(0, 4)}
+                        onChange={(code: string) =>
+                          setForm({ ...form, caretakerPin: code })
+                        }
+                        accentColor="#f5f5f5"
+                        inkColor="#f5f5f5"
+                        slotColor="#27272a"
+                        digitColor="#18181b"
+                        dangerColor="#ff3b30"
+                        slotSize={38}
+                        gap={8}
+                        radius={10}
+                        ariaLabel="Caretaker Security PIN"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold">Shift &amp; Duties</label>
@@ -1054,14 +1064,25 @@ export function OnboardingWizard({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold">Family Security PIN (4+ digits)</label>
-                    <input
-                      type="password"
-                      placeholder="Set Family PIN (e.g., 8899)"
-                      value={form.familyPin}
-                      onChange={(e) => setForm({ ...form, familyPin: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 font-mono text-xs"
-                    />
+                    <label className="block text-xs font-semibold">Family Security PIN (4 digits)</label>
+                    <div className="mt-1.5 flex items-center justify-center rounded-xl bg-[#18181b] py-2.5 px-3">
+                      <CodeSlots
+                        length={4}
+                        value={form.familyPin.replace(/\D/g, '').slice(0, 4)}
+                        onChange={(code: string) =>
+                          setForm({ ...form, familyPin: code })
+                        }
+                        accentColor="#f5f5f5"
+                        inkColor="#f5f5f5"
+                        slotColor="#27272a"
+                        digitColor="#18181b"
+                        dangerColor="#ff3b30"
+                        slotSize={38}
+                        gap={8}
+                        radius={10}
+                        ariaLabel="Family Security PIN"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold">Relation &amp; Role</label>
@@ -1098,15 +1119,26 @@ export function OnboardingWizard({
                 <div className="mt-3 grid gap-4 sm:grid-cols-3">
                   <div>
                     <label className="block text-xs font-semibold">
-                      Elder Security PIN (4+ digits)
+                      Elder Security PIN (4 digits)
                     </label>
-                    <input
-                      type="password"
-                      placeholder="Set Elder PIN (e.g., 1234)"
-                      value={form.elderPin}
-                      onChange={(e) => setForm({ ...form, elderPin: e.target.value })}
-                      className="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 font-mono text-xs"
-                    />
+                    <div className="mt-1.5 flex items-center justify-center rounded-xl bg-[#18181b] py-2.5 px-3">
+                      <CodeSlots
+                        length={4}
+                        value={form.elderPin.replace(/\D/g, '').slice(0, 4)}
+                        onChange={(code: string) =>
+                          setForm({ ...form, elderPin: code })
+                        }
+                        accentColor="#f5f5f5"
+                        inkColor="#f5f5f5"
+                        slotColor="#27272a"
+                        digitColor="#18181b"
+                        dangerColor="#ff3b30"
+                        slotSize={38}
+                        gap={8}
+                        radius={10}
+                        ariaLabel="Elder Security PIN"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-semibold">

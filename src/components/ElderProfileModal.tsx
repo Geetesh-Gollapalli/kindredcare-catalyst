@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { PillBadgeSvg } from './KindredCareBrand';
+import HoldButton from './HoldButton';
+import AnimatedList from './AnimatedList';
 import type { PillShape } from '@/types/domain';
 
 export interface ProfileMedItem {
@@ -33,6 +35,7 @@ export function ElderProfileModal({
   open,
   onClose,
   onOpenOnboarding,
+  onDeleteProfile,
   elderName,
   elderAge,
   bloodGroup,
@@ -54,6 +57,7 @@ export function ElderProfileModal({
   open: boolean;
   onClose: () => void;
   onOpenOnboarding: () => void;
+  onDeleteProfile?: () => void;
   elderName: string;
   elderAge: number;
   bloodGroup: string;
@@ -325,27 +329,71 @@ export function ElderProfileModal({
           </div>
         </div>
 
-        {/* 4. CHRONOLOGICAL CARE TEAM ACTIVITY LOG */}
+        {/* 4. CHRONOLOGICAL CARE TEAM ACTIVITY LOG (React Bits AnimatedList) */}
         <div className="mt-6">
           <h3 className="text-base font-bold text-[#14171A]">
             Recent Updates &amp; Daily Progress Checks Across Care Circle
           </h3>
-          <div className="mt-2.5 space-y-2">
-            {auditLog.slice(0, 6).map((a) => (
-              <div
-                key={a.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/10 bg-white px-3.5 py-2.5 text-xs"
-              >
-                <div>
-                  <span className="font-bold text-[#0F524B]">{a.actor}:</span>{' '}
-                  <span className="text-[#14171A]">{a.note}</span>
+          <div className="mt-2.5">
+            <AnimatedList
+              items={auditLog}
+              maxHeight={260}
+              showGradients={true}
+              enableArrowNavigation={true}
+              displayScrollbar={true}
+              renderItem={(a: ProfileAuditEntry, _idx: number, isSelected: boolean) => (
+                <div
+                  className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-xs transition-all ${
+                    isSelected
+                      ? 'border-[#0F524B] bg-[#0F524B]/5 shadow-xs'
+                      : 'border-black/10 bg-white'
+                  }`}
+                >
+                  <div>
+                    <span className="font-bold text-[#0F524B]">{a.actor}:</span>{' '}
+                    <span className="text-[#14171A]">{a.note}</span>
+                  </div>
+                  <span className="rounded bg-[#F6F5F1] px-2 py-0.5 font-semibold text-[#57606A]">
+                    {a.when}
+                  </span>
                 </div>
-                <span className="rounded bg-[#F6F5F1] px-2 py-0.5 font-semibold text-[#57606A]">
-                  {a.when}
-                </span>
-              </div>
-            ))}
+              )}
+            />
           </div>
+        </div>
+
+        {/* 5. PROFILE DELETE / CARE CIRCLE RESET (React Bits HoldButton) */}
+        <div className="no-print mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-red-200/80 bg-red-50/40 p-4">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-wider text-red-900">
+              Danger Zone • Delete Profile &amp; Reset Care Circle
+            </div>
+            <p className="mt-0.5 text-xs text-[#57606A]">
+              Press and hold for 2 seconds to permanently delete this profile and restart first-time setup.
+            </p>
+          </div>
+          <HoldButton
+            doneLabel="Deleted"
+            backgroundColor="#27272a"
+            fillColor="#5227FF"
+            textColor="#f5f5f5"
+            fillTextColor="#ffffff"
+            size="md"
+            radius={14}
+            fillDirection="right"
+            holdTime={2000}
+            releaseTime={200}
+            pressScale={0.97}
+            wave
+            waveAmplitude={6}
+            glow
+            resetAfter={1200}
+            onHold={() => {
+              onDeleteProfile?.();
+            }}
+          >
+            Hold to delete
+          </HoldButton>
         </div>
       </div>
     </div>

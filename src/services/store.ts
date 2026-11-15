@@ -899,3 +899,17 @@ export async function recordEmailReminderInStore(
   }));
   return log;
 }
+
+export async function resetCareCircleInStore(): Promise<CareCircleState> {
+  const freshState = createSeedCareCircle();
+  const freshPasscodes = [...DEFAULT_PASSCODE_RECORDS];
+  globalForStore.__kindredCareStore = freshState;
+  globalForStore.__kindredCarePasscodes = freshPasscodes;
+  globalForStore.__kindredCareOnboarded = false;
+  savePersistedDb({
+    isOnboarded: false,
+    state: freshState,
+    passcodeRecords: freshPasscodes,
+  });
+  return freshState;
+}

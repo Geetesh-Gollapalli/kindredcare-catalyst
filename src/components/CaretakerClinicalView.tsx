@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { PillBadgeSvg } from './KindredCareBrand';
+import AnimatedList from './AnimatedList';
 import type { ProfileAuditEntry, ProfileMedItem } from './ElderProfileModal';
 import type { ElderAppointmentItem } from './ElderCompanionView';
 import type { DrugSafetyReport, PillShape } from '@/types/domain';
@@ -1103,38 +1104,47 @@ export function CaretakerClinicalView({
             </div>
           </section>
 
-          {/* Dispatched Emails Outbox Log */}
+          {/* Dispatched Emails Outbox Log (React Bits AnimatedList) */}
           <section className="rounded-2xl border border-black/10 bg-white p-6">
             <h3 className="text-base font-bold text-[#14171A]">
               Dispatched Email Outbox &amp; Delivery Audit ({emails.length})
             </h3>
-            <div className="mt-3 space-y-2.5">
-              {emails.map((em) => (
-                <div
-                  key={em.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-black/10 bg-[#F6F5F1] p-3.5 text-xs"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="font-bold text-[#14171A]">{em.subject}</div>
-                    <div className="text-[#57606A]">
-                      To: {em.recipients} • {em.sentAt}
+            <div className="mt-3">
+              <AnimatedList
+                items={emails}
+                maxHeight={340}
+                showGradients={true}
+                enableArrowNavigation={true}
+                renderItem={(em: CaretakerEmailItem, _idx: number, isSelected: boolean) => (
+                  <div
+                    className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3.5 text-xs transition-all ${
+                      isSelected
+                        ? 'border-[#0F524B] bg-[#0F524B]/5 shadow-xs'
+                        : 'border-black/10 bg-[#F6F5F1]'
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-[#14171A]">{em.subject}</div>
+                      <div className="text-[#57606A]">
+                        To: {em.recipients} • {em.sentAt}
+                      </div>
+                      <div className="mt-0.5 text-[#57606A]">{em.preview}</div>
                     </div>
-                    <div className="mt-0.5 text-[#57606A]">{em.preview}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded bg-[#0E6B50]/15 px-2.5 py-1 font-bold text-[#0E6B50]">
+                        {em.status}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewEmail(em)}
+                        className="rounded-lg border border-black/15 bg-white px-3 py-1.5 font-bold"
+                      >
+                        Preview HTML
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="rounded bg-[#0E6B50]/15 px-2.5 py-1 font-bold text-[#0E6B50]">
-                      {em.status}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setPreviewEmail(em)}
-                      className="rounded-lg border border-black/15 bg-white px-3 py-1.5 font-bold"
-                    >
-                      Preview HTML
-                    </button>
-                  </div>
-                </div>
-              ))}
+                )}
+              />
             </div>
           </section>
         </div>

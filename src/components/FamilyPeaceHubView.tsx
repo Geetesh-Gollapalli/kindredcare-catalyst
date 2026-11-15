@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { PillBadgeSvg } from './KindredCareBrand';
+import AnimatedList from './AnimatedList';
 import {
   buildValidGoogleCalendarUrl,
   downloadAppointmentIcs,
@@ -478,23 +479,32 @@ export function FamilyPeaceHubView({
               </button>
             </div>
 
-            <div className="mt-5 space-y-2.5">
-              {emails.map((em) => (
-                <div
-                  key={em.id}
-                  className="flex items-center justify-between rounded-xl bg-[#F6F5F1] p-3.5 text-xs"
-                >
-                  <div>
-                    <div className="font-bold text-[#14171A]">{em.subject}</div>
-                    <div className="text-[#57606A]">
-                      To: {em.recipients} • {em.sentAt}
+            <div className="mt-5">
+              <AnimatedList
+                items={emails}
+                maxHeight={320}
+                showGradients={true}
+                enableArrowNavigation={true}
+                renderItem={(em: CaretakerEmailItem, _idx: number, isSelected: boolean) => (
+                  <div
+                    className={`flex items-center justify-between rounded-xl border p-3.5 text-xs transition-all ${
+                      isSelected
+                        ? 'border-[#0F524B] bg-[#0F524B]/5 shadow-xs'
+                        : 'border-transparent bg-[#F6F5F1]'
+                    }`}
+                  >
+                    <div>
+                      <div className="font-bold text-[#14171A]">{em.subject}</div>
+                      <div className="text-[#57606A]">
+                        To: {em.recipients} • {em.sentAt}
+                      </div>
                     </div>
+                    <span className="rounded bg-[#0E6B50]/15 px-2.5 py-1 font-bold text-[#0E6B50]">
+                      {em.status}
+                    </span>
                   </div>
-                  <span className="rounded bg-[#0E6B50]/15 px-2.5 py-1 font-bold text-[#0E6B50]">
-                    {em.status}
-                  </span>
-                </div>
-              ))}
+                )}
+              />
             </div>
           </section>
         </div>

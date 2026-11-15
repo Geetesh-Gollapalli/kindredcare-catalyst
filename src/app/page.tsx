@@ -29,6 +29,11 @@ import {
 } from '@/components/CaretakerClinicalView';
 import { FamilyPeaceHubView } from '@/components/FamilyPeaceHubView';
 import BranchedMenu from '@/components/BranchedMenu';
+import CodeSlots from '@/components/CodeSlots';
+import TechText from '@/components/TechText';
+import GlassReveal21st from '@/components/GlassIconReveal';
+import DoodleCrewFooter from '@/components/DoodleCrewFooter';
+import AnimatedList from '@/components/AnimatedList';
 import {
   Calendar03Icon,
   CheckListIcon,
@@ -198,6 +203,7 @@ export default function KindredCarePage() {
   const [portalRoleTab, setPortalRoleTab] = useState<CareRole>('elder');
   const [memberNameInput, setMemberNameInput] = useState('');
   const [passcodeInput, setPasscodeInput] = useState('');
+  const [pinSlotStatus, setPinSlotStatus] = useState<'idle' | 'error' | 'success'>('idle');
   const [showPasscodeText, setShowPasscodeText] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [portalError, setPortalError] = useState<string | null>(null);
@@ -628,6 +634,7 @@ export default function KindredCarePage() {
         }),
       });
       if (res.ok) {
+        setPinSlotStatus('success');
         setFailedAttempts(0);
         setPortalError(null);
         setPasscodeInput('');
@@ -643,6 +650,7 @@ export default function KindredCarePage() {
     );
 
     if (!matchedRole) {
+      setPinSlotStatus('error');
       const nextFail = failedAttempts + 1;
       setFailedAttempts(nextFail);
       const rem = Math.max(0, 5 - nextFail);
@@ -652,10 +660,26 @@ export default function KindredCarePage() {
       return;
     }
 
+    setPinSlotStatus('success');
     setFailedAttempts(0);
     setPortalError(null);
     setPasscodeInput('');
     await enterRoleWithHydrationGate(matchedRole, pass, nameEntered);
+  }
+
+  async function handleDeleteProfile() {
+    await fetch('/api/circle', { method: 'DELETE' }).catch(() => null);
+    await fetch('/api/auth', { method: 'DELETE' }).catch(() => null);
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('kindredcare_onboarded_v2');
+    }
+    setIsOnboarded(false);
+    setShowProfileModal(false);
+    setMemberNameInput('');
+    setPasscodeInput('');
+    setPinSlotStatus('idle');
+    setStage('onboarding');
+    showToast('🗑️ Profile deleted & Care Circle reset. Starting fresh first-time onboarding.');
   }
 
   // Medication Actions
@@ -1174,10 +1198,28 @@ export default function KindredCarePage() {
      RENDER 3: PROFESSIONAL NAME + PIN SIGN-IN PORTAL
      ========================================================= */
   if (stage === 'portal') {
+    const portalHighlights = [
+      {
+        id: 'hl-elder',
+        title: 'Elderly Member Workspace',
+        desc: 'Calm 3-button companion with physical pill visuals, meal-timing safety guard, and multilingual voice read-aloud.',
+      },
+      {
+        id: 'hl-caretaker',
+        title: 'Caretaker Clinical Station',
+        desc: 'Shift administration, AI prescription scanner, drug-interaction guard, vitals tracking, and doctor visit briefs.',
+      },
+      {
+        id: 'hl-family',
+        title: 'Family Peace-of-Mind Hub',
+        desc: 'Real-time 7-day adherence calendar, pharmacy refill tracking, and proactive email reminders honoring Elder privacy settings.',
+      },
+    ];
+
     return (
       <main
         id="main-content"
-        className="flex min-h-screen items-center justify-center bg-[#F6F5F1] px-4 py-10"
+        className="flex min-h-screen flex-col justify-between bg-[#F6F5F1]"
       >
         {toastMessage && (
           <div className="fixed right-5 bottom-5 z-50 rounded-xl bg-[#14171A] px-4 py-3 text-xs font-bold text-white shadow-xl">
@@ -1185,211 +1227,266 @@ export default function KindredCarePage() {
           </div>
         )}
 
-        <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-black/12 bg-white shadow-xl lg:grid-cols-12">
-          {/* Left Column: Executive Healthcare Brand & Role Architecture */}
-          <div className="flex flex-col justify-between bg-[#FBFBF9] p-7 lg:col-span-6 lg:border-r lg:border-black/10 lg:p-10">
-            <div className="space-y-6">
-              <KindredCareLogo
-                size={46}
-                subtitle="Connected Elderly Care & Medication Platform"
-              />
-
-              <div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-[#14171A]">
-                  Shared elderly care, built around dignity.
-                </h1>
-                <p className="mt-2.5 text-sm leading-relaxed text-[#57606A]">
-                  Sign in with your <strong>Name</strong> and <strong>Security PIN</strong> to
-                  open your dedicated role workspace. Elders receive a calm, large-button
-                  companion while Caretakers and Family members access clinical and
-                  adherence tools.
-                </p>
-              </div>
-
-              {/* Role Architecture Highlights */}
-              <div className="space-y-3 pt-2">
-                <div className="rounded-2xl border border-black/10 bg-white p-4">
-                  <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
-                    Elderly Member Workspace
+        <div className="flex flex-1 items-center justify-center px-4 py-10">
+          <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-black/12 bg-white shadow-xl lg:grid-cols-12">
+            {/* Left Column: 21st.dev GlassReveal Logo + React Bits TechText Webname + AnimatedList */}
+            <div className="flex flex-col justify-between bg-[#FBFBF9] p-7 lg:col-span-6 lg:border-r lg:border-black/10 lg:p-10">
+              <div className="space-y-6">
+                {/* 21st.dev GlassIconReveal Logo + React Bits TechText Webname */}
+                <div className="flex items-center gap-4 rounded-2xl bg-[#0e0e10] p-4 shadow-lg">
+                  <div className="shrink-0">
+                    <GlassReveal21st className="h-14 w-14" look="dark" />
                   </div>
-                  <p className="mt-1 text-xs text-[#57606A]">
-                    Calm 3-button companion with physical pill visuals, meal-timing safety
-                    guard, and multilingual voice read-aloud.
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <TechText
+                      text="KindredCare"
+                      fontSize={34}
+                      color="#ffffff"
+                      accentColor="#5227FF"
+                      duration={1.1}
+                      stagger={0.03}
+                      sliceCount={7}
+                      sliceTravel={0.35}
+                      scanDensity={3}
+                      glow={0.6}
+                      trigger="mount"
+                      replayOnHover
+                    />
+                    <p className="mt-1 text-[11px] font-medium tracking-wide text-zinc-400">
+                      Connected Elderly Care &amp; Medication Platform
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <h1 className="text-3xl font-extrabold tracking-tight text-[#14171A]">
+                    Shared elderly care, built around dignity.
+                  </h1>
+                  <p className="mt-2.5 text-sm leading-relaxed text-[#57606A]">
+                    Sign in with your <strong>Name</strong> and <strong>Security PIN</strong> to
+                    open your dedicated role workspace. Elders receive a calm, large-button
+                    companion while Caretakers and Family members access clinical and
+                    adherence tools.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-black/10 bg-white p-4">
-                  <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
-                    Caretaker Clinical Station
-                  </div>
-                  <p className="mt-1 text-xs text-[#57606A]">
-                    Shift administration, AI prescription scanner, drug-interaction guard,
-                    vitals tracking, and doctor visit briefs.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-black/10 bg-white p-4">
-                  <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
-                    Family Peace-of-Mind Hub
-                  </div>
-                  <p className="mt-1 text-xs text-[#57606A]">
-                    Real-time 7-day adherence calendar, pharmacy refill tracking, and
-                    proactive email reminders honoring Elder privacy settings.
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-black/10 pt-5">
-              <button
-                type="button"
-                onClick={() => setStage('onboarding')}
-                className="rounded-xl border border-black/15 bg-white px-4 py-2.5 text-xs font-bold text-[#14171A] hover:bg-[#EFECE6]"
-              >
-                📄 Update Health Profile / Upload Medical PDF
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowProfileModal(true)}
-                className="rounded-xl border border-[#0F524B]/30 bg-[#0F524B]/5 px-4 py-2.5 text-xs font-bold text-[#0F524B]"
-              >
-                👤 View Care Circle Profile
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column: Clean Name + Security PIN Sign-In */}
-          <div className="flex flex-col justify-center p-7 lg:col-span-6 lg:p-10">
-            <h2 className="text-2xl font-extrabold text-[#14171A]">
-              Sign In to Your Workspace
-            </h2>
-            <p className="mt-1 text-xs text-[#57606A]">
-              Select your role, enter your full name, and enter your personal security PIN.
-            </p>
-
-            {/* Clean Role Selector Tabs (Zero Exposed PINs) */}
-            <div className="mt-5 grid grid-cols-3 gap-1.5 rounded-xl bg-[#EFECE6] p-1">
-              {(
-                [
-                  { r: 'elder', label: 'Elderly Member' },
-                  { r: 'caretaker', label: 'Caretaker / Nurse' },
-                  { r: 'family', label: 'Family Member' },
-                ] as const
-              ).map((tab) => (
-                <button
-                  key={tab.r}
-                  type="button"
-                  onClick={() => {
-                    setPortalRoleTab(tab.r);
-                    setPasscodeInput('');
-                    setPortalError(null);
-                  }}
-                  className={`rounded-lg py-2.5 text-xs font-bold transition ${
-                    portalRoleTab === tab.r
-                      ? 'bg-white text-[#14171A] shadow-2xs'
-                      : 'text-[#57606A]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-4 space-y-3.5">
-              <div>
-                <label
-                  htmlFor="member-name-field"
-                  className="block text-xs font-bold text-[#14171A]"
-                >
-                  Your Full Name
-                </label>
-                <input
-                  id="member-name-field"
-                  type="text"
-                  placeholder={
-                    portalRoleTab === 'elder'
-                      ? 'Enter your full name'
-                      : portalRoleTab === 'caretaker'
-                        ? 'Enter caretaker name'
-                        : 'Enter family member name'
-                  }
-                  value={memberNameInput}
-                  onChange={(e) => {
-                    setMemberNameInput(e.target.value);
-                    setPortalError(null);
-                  }}
-                  className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm font-semibold"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="passcode-field"
-                  className="block text-xs font-bold text-[#14171A]"
-                >
-                  Your Security PIN
-                </label>
-                <div className="mt-1 flex gap-1.5">
-                  <input
-                    id="passcode-field"
-                    type={showPasscodeText ? 'text' : 'password'}
-                    placeholder="Enter your 4+ digit PIN"
-                    value={passcodeInput}
-                    onChange={(e) => {
-                      setPasscodeInput(e.target.value);
-                      setPortalError(null);
-                    }}
-                    className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 font-mono text-sm font-bold"
+                {/* Role Architecture Highlights (React Bits AnimatedList) */}
+                <div className="pt-1">
+                  <AnimatedList
+                    items={portalHighlights}
+                    maxHeight={290}
+                    showGradients={false}
+                    displayScrollbar={false}
+                    renderItem={(item, _idx, isSelected) => (
+                      <div
+                        className={`rounded-2xl border p-4 transition-all ${
+                          isSelected
+                            ? 'border-[#5227FF]/40 bg-[#5227FF]/5 shadow-xs'
+                            : 'border-black/10 bg-white'
+                        }`}
+                      >
+                        <div className="text-xs font-bold uppercase tracking-wider text-[#0F524B]">
+                          {item.title}
+                        </div>
+                        <p className="mt-1 text-xs text-[#57606A]">{item.desc}</p>
+                      </div>
+                    )}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPasscodeText(!showPasscodeText)}
-                    className="rounded-xl border border-black/15 px-3.5 text-xs font-bold"
-                  >
-                    {showPasscodeText ? 'Hide' : 'Show'}
-                  </button>
                 </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-black/10 pt-5">
+                <button
+                  type="button"
+                  onClick={() => setStage('onboarding')}
+                  className="rounded-xl border border-black/15 bg-white px-4 py-2.5 text-xs font-bold text-[#14171A] hover:bg-[#EFECE6]"
+                >
+                  📄 Update Health Profile / Upload Medical PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowProfileModal(true)}
+                  className="rounded-xl border border-[#0F524B]/30 bg-[#0F524B]/5 px-4 py-2.5 text-xs font-bold text-[#0F524B]"
+                >
+                  👤 View Care Circle Profile
+                </button>
               </div>
             </div>
 
-            {/* Numeric Keypad */}
-            <div
-              className="mt-4 grid grid-cols-3 gap-2"
-              aria-label="Security PIN numeric keypad"
-            >
-              {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Clear', '0', 'Del'].map(
-                (key) => (
+            {/* Right Column: Clean Name + React Bits CodeSlots PIN Entry */}
+            <div className="flex flex-col justify-center p-7 lg:col-span-6 lg:p-10">
+              <h2 className="text-2xl font-extrabold text-[#14171A]">
+                Sign In to Your Workspace
+              </h2>
+              <p className="mt-1 text-xs text-[#57606A]">
+                Select your role, enter your full name, and enter your personal security PIN.
+              </p>
+
+              {/* Clean Role Selector Tabs (Zero Exposed PINs) */}
+              <div className="mt-5 grid grid-cols-3 gap-1.5 rounded-xl bg-[#EFECE6] p-1">
+                {(
+                  [
+                    { r: 'elder', label: 'Elderly Member' },
+                    { r: 'caretaker', label: 'Caretaker / Nurse' },
+                    { r: 'family', label: 'Family Member' },
+                  ] as const
+                ).map((tab) => (
                   <button
-                    key={key}
+                    key={tab.r}
                     type="button"
                     onClick={() => {
-                      if (key === 'Clear') setPasscodeInput('');
-                      else if (key === 'Del')
-                        setPasscodeInput((prev) => prev.slice(0, -1));
-                      else setPasscodeInput((prev) => prev + key);
+                      setPortalRoleTab(tab.r);
+                      setPasscodeInput('');
+                      setPinSlotStatus('idle');
+                      setPortalError(null);
                     }}
-                    className="rounded-xl border border-black/12 bg-[#F6F5F1] py-2.5 text-sm font-bold text-[#14171A] hover:bg-[#EFECE6]"
+                    className={`rounded-lg py-2.5 text-xs font-bold transition ${
+                      portalRoleTab === tab.r
+                        ? 'bg-white text-[#14171A] shadow-2xs'
+                        : 'text-[#57606A]'
+                    }`}
                   >
-                    {key}
+                    {tab.label}
                   </button>
-                )
-              )}
-            </div>
-
-            {portalError && (
-              <div
-                role="alert"
-                className="mt-3 rounded-xl border border-red-300 bg-red-50 px-3.5 py-2.5 text-xs font-bold text-red-800"
-              >
-                {portalError}
+                ))}
               </div>
-            )}
 
-            <button
-              type="button"
-              onClick={handlePortalUnlock}
-              className="mt-4 w-full rounded-xl bg-[#0F524B] py-3.5 text-sm font-extrabold text-white shadow-md hover:bg-[#0A3C36]"
-            >
-              Sign In to Workspace →
-            </button>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label
+                    htmlFor="member-name-field"
+                    className="block text-xs font-bold text-[#14171A]"
+                  >
+                    Your Full Name
+                  </label>
+                  <input
+                    id="member-name-field"
+                    type="text"
+                    placeholder={
+                      portalRoleTab === 'elder'
+                        ? 'Enter your full name'
+                        : portalRoleTab === 'caretaker'
+                          ? 'Enter caretaker name'
+                          : 'Enter family member name'
+                    }
+                    value={memberNameInput}
+                    onChange={(e) => {
+                      setMemberNameInput(e.target.value);
+                      setPortalError(null);
+                    }}
+                    className="mt-1 w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="passcode-field"
+                      className="block text-xs font-bold text-[#14171A]"
+                    >
+                      Your Security PIN
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPasscodeText(!showPasscodeText)}
+                      className="text-[11px] font-bold text-[#0F524B] hover:underline"
+                    >
+                      {showPasscodeText ? 'Mask PIN Digits' : 'Show PIN Digits'}
+                    </button>
+                  </div>
+
+                  {/* React Bits CodeSlots Component for PIN Entry */}
+                  <div className="mt-1.5 flex flex-col items-center justify-center rounded-2xl bg-[#18181b] px-4 py-4 shadow-inner">
+                    <CodeSlots
+                      length={4}
+                      value={passcodeInput.replace(/\D/g, '').slice(0, 4)}
+                      status={pinSlotStatus}
+                      mask={!showPasscodeText}
+                      onChange={(code: string) => {
+                        setPasscodeInput(code);
+                        if (pinSlotStatus !== 'idle') setPinSlotStatus('idle');
+                        setPortalError(null);
+                      }}
+                      onComplete={(code: string) => {
+                        setPasscodeInput(code);
+                      }}
+                      accentColor="#f5f5f5"
+                      inkColor="#f5f5f5"
+                      slotColor="#27272a"
+                      digitColor="#18181b"
+                      dangerColor="#ff3b30"
+                      slotSize={48}
+                      gap={10}
+                      radius={12}
+                      bounce={0.2}
+                      settle={0.3}
+                      rise={8}
+                      cascade={20}
+                      ariaLabel="Security PIN"
+                    />
+                    {/* Hidden accessible input for tests & password managers */}
+                    <input
+                      id="passcode-field"
+                      type={showPasscodeText ? 'text' : 'password'}
+                      value={passcodeInput}
+                      onChange={(e) => {
+                        setPasscodeInput(e.target.value.replace(/\D/g, '').slice(0, 6));
+                        setPinSlotStatus('idle');
+                        setPortalError(null);
+                      }}
+                      className="sr-only"
+                      aria-label="Enter your 4+ digit PIN"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Numeric Keypad */}
+              <div
+                className="mt-4 grid grid-cols-3 gap-2"
+                aria-label="Security PIN numeric keypad"
+              >
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'Clear', '0', 'Del'].map(
+                  (key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => {
+                        setPinSlotStatus('idle');
+                        setPortalError(null);
+                        if (key === 'Clear') setPasscodeInput('');
+                        else if (key === 'Del')
+                          setPasscodeInput((prev) => prev.slice(0, -1));
+                        else
+                          setPasscodeInput((prev) =>
+                            prev.length < 4 ? prev + key : prev
+                          );
+                      }}
+                      className="rounded-xl border border-black/12 bg-[#F6F5F1] py-2.5 text-sm font-bold text-[#14171A] hover:bg-[#EFECE6]"
+                    >
+                      {key}
+                    </button>
+                  )
+                )}
+              </div>
+
+              {portalError && (
+                <div
+                  role="alert"
+                  className="mt-3 rounded-xl border border-red-300 bg-red-50 px-3.5 py-2.5 text-xs font-bold text-red-800"
+                >
+                  {portalError}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handlePortalUnlock}
+                className="mt-4 w-full rounded-xl bg-[#0F524B] py-3.5 text-sm font-extrabold text-white shadow-md hover:bg-[#0A3C36]"
+              >
+                Sign In to Workspace →
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1398,6 +1495,7 @@ export default function KindredCarePage() {
           open={showProfileModal}
           onClose={() => setShowProfileModal(false)}
           onOpenOnboarding={() => setStage('onboarding')}
+          onDeleteProfile={handleDeleteProfile}
           elderName={elderName}
           elderAge={elderAge}
           bloodGroup={bloodGroup}
@@ -1425,6 +1523,17 @@ export default function KindredCarePage() {
           medications={medications}
           auditLog={auditLog}
         />
+
+        {/* 21st.dev DoodleCrewFooter on Landing Page */}
+        <div className="w-full no-print mt-8">
+          <DoodleCrewFooter
+            wordmark="KINDREDCARE"
+            brand="KindredCare AI"
+            blurb="Role-isolated elderly care & medication safety platform powered by Adaption Labs Gemma 4, Gemini 2.5 Flash & Firebase."
+            tagline="Shared elderly care, built around dignity."
+            copyright="© 2026 KindredCare AI • PromptWars × Catalyst Hackathon"
+          />
+        </div>
       </main>
     );
   }
@@ -1949,6 +2058,7 @@ export default function KindredCarePage() {
         open={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         onOpenOnboarding={() => setStage('onboarding')}
+        onDeleteProfile={handleDeleteProfile}
         elderName={elderName}
         elderAge={elderAge}
         bloodGroup={bloodGroup}
@@ -2105,6 +2215,17 @@ export default function KindredCarePage() {
           </div>
         </div>
       )}
+
+      {/* 21st.dev DoodleCrewFooter in Workspace */}
+      <div className="w-full no-print mt-12">
+        <DoodleCrewFooter
+          wordmark="KINDREDCARE"
+          brand="KindredCare AI"
+          blurb="Role-isolated elderly care & medication safety platform powered by Adaption Labs Gemma 4, Gemini 2.5 Flash & Firebase."
+          tagline="Shared elderly care, built around dignity."
+          copyright="© 2026 KindredCare AI • PromptWars × Catalyst Hackathon"
+        />
+      </div>
     </div>
   );
 }
